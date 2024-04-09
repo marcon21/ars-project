@@ -1,5 +1,8 @@
 import pygame
 from pygame.locals import *
+from agent import Agent
+from env import PygameEnviroment, Wall, Enviroment
+from math import pi
 
 pygame.init()
 
@@ -13,16 +16,37 @@ clock = pygame.time.Clock()
 dt = 0
 pygame.display.set_caption(GAME_TITLE)
 
-player_pos = pygame.Vector2(window.get_width() / 2, window.get_height() / 2)
+agent = Agent(
+    x=window.get_width() / 2,
+    y=window.get_height() / 2,
+    size=40,
+    move_speed=10,
+)
+
+env = PygameEnviroment(agent=agent)
+env.add_wall(Wall(100, 100, 200, 100))
+
+rotation_size = pi / 180 * 10
 
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                running = False
+            if event.key == K_q:
+                agent.rotate(-rotation_size)
+            if event.key == K_e:
+                agent.rotate(rotation_size)
+            if event.key == K_w:
+                agent.move_forward()
 
     window.fill("gray")
-    pygame.draw.circle(window, "red", player_pos, 40)
+
+    env.draw_sensors(window, n_sensors=20, max_distance=400)
+    env.show(window)
 
     pygame.display.flip()
 
