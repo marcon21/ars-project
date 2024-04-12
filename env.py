@@ -1,15 +1,9 @@
 import pygame
 from pygame.locals import *
 from typing import List
-from agent import Agent
-from utils import intersection
+from actors import Agent, Wall
+from utils import intersection, distance_from_wall
 import numpy as np
-
-
-class Wall:
-    def __init__(self, x1, y1, x2, y2):
-        self.start = (x1, y1)
-        self.end = (x2, y2)
 
 
 class Enviroment:
@@ -19,6 +13,58 @@ class Enviroment:
 
     def add_wall(self, wall: Wall):
         self.walls.append(wall)
+
+    def move_agent(self):
+        move_vector = self.agent.direction_vector * self.agent.move_speed
+        for wall in self.walls:
+            current_d = distance_from_wall(wall, self.agent.pos)
+
+            if current_d <= self.agent.size:
+                # Vector of the wall direction
+                wall_vector = np.array(
+                    [wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]]
+                )
+                wall_vector = wall_vector / np.linalg.norm(wall_vector)
+
+                # Vector of the agent parallel to the wall
+                parallel_component = np.dot(wall_vector, move_vector) * wall_vector
+
+                # Vector of the agent perpendicular to the wall
+                wall_to_agent = self.agent.pos - np.array(
+                    distance_from_wall(wall, self.agent.pos, coords=True)
+                )
+                wall_to_agent = wall_to_agent / np.linalg.norm(wall_to_agent)
+
+                # If the agent is inside the wall push it out
+                self.agent.apply_vector(wall_to_agent * (self.agent.size - current_d))
+                # Check if the agent is moving towards the wall
+                if np.dot(self.agent.direction_vector, -wall_to_agent) > 0:
+                    # If the agent is moving towards the wall only consider the parallel component
+                    move_vector = parallel_component
+
+        # def rotate_clock():
+        #     return np.array([[0, 1], [-1, 0]])
+
+        # top_start = (
+        #     self.agent.pos
+        #     + self.agent.direction_vector * rotate_clock() * self.agent.size
+        # )
+        # top_end = (
+        #     self.agent.pos
+        #     + move_vector
+        #     + self.agent.direction_vector * rotate_clock() * self.agent.size
+        # )
+        # bot_start = (
+        #     self.agent.pos
+        #     - self.agent.direction_vector * rotate_clock() * self.agent.size
+        # )
+        # bot_end = (
+        #     self.agent.pos
+        #     + move_vector
+        #     - self.agent.direction_vector * rotate_clock() * self.agent.size
+        # )
+
+        self.agent.apply_vector(move_vector)
 
     def get_sensor_data(self, n_sensors=8, max_distance=200):
         sensor_data = []
@@ -57,7 +103,16 @@ class PygameEnviroment(Enviroment):
         for wall in self.walls:
             pygame.draw.line(window, "black", wall.start, wall.end, width=5)
 
-        pygame.draw.circle(window, self.agent.color, self.agent.pos, self.agent.size)
+        agent_color = self.agent.color
+        for wall in self.walls:
+            dist = distance_from_wall(wall, self.agent.pos)
+            if dist == self.agent.size:
+                agent_color = "blue"
+            if dist < self.agent.size:
+                agent_color = "red"
+
+        pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
+
         pygame.draw.line(
             window,
             "black",
