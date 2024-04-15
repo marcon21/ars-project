@@ -54,7 +54,7 @@ while running:
 
     # print(env.agent.pos)
 
-    # env.draw_sensors(window, n_sensors=20, max_distance=400)
+    env.draw_sensors(window, n_sensors=20, max_distance=400)
     env.show(window)
 
     pygame.display.flip()
