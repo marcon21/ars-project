@@ -49,7 +49,7 @@ while running:
             if event.key == K_w:
                 pass
 
-    env.agent.move_speed = 50 * dt * 1000
+    env.agent.move_speed = 50 * dt * 1
     env.move_agent()
 
     # print(env.agent.pos)
