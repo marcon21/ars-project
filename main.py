@@ -24,12 +24,18 @@ base_move_speed = 50
 agent = Agent(
     x=window.get_width() / 2,
     y=window.get_height() / 2,
-    size=40,
+    size=20,
     move_speed=base_move_speed,
     color="green",
 )
 env = PygameEnviroment(agent=agent)
 env.load_walls("walls.txt")
+
+
+def reset_agent():
+    agent.pos = (window.get_width() / 2, window.get_height() / 2)
+    agent.direction_vector = np.array([1, 0])
+
 
 rotation_size = pi / 180 * 10
 move_modifier = 1
@@ -83,14 +89,15 @@ while running:
                 env.save_walls("walls.txt")
             if event.key == K_l:
                 # Load walls
-                env.load_walls("walls.txt")
+                filename = "walls.txt"
+                env.load_walls(filename)
+                reset_agent()
             if event.key == K_BACKSPACE:
                 # Remove all walls
                 env.walls = []
             if event.key == K_r:
                 # Reset agent
-                agent.pos = (window.get_width() / 2, window.get_height() / 2)
-                agent.direction_vector = np.array([1, 0])
+                reset_agent()
             if event.key == K_t:
                 # Show text
                 show_text = not show_text

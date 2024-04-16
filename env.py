@@ -103,6 +103,7 @@ class Enviroment:
         print("Walls saved to", filename)
 
     def load_walls(self, filename):
+        self.walls = []
         with open(filename, "r") as f:
             for line in f:
                 wall = line.split()
