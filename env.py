@@ -93,6 +93,25 @@ class Enviroment:
 
         return sensor_data
 
+    def save_walls(self, filename):
+        with open(filename, "w") as f:
+            for wall in self.walls:
+                f.write(
+                    f"{wall.start[0]} {wall.start[1]} {wall.end[0]} {wall.end[1]}\n"
+                )
+
+        print("Walls saved to", filename)
+
+    def load_walls(self, filename):
+        with open(filename, "r") as f:
+            for line in f:
+                wall = line.split()
+                self.add_wall(
+                    Wall(int(wall[0]), int(wall[1]), int(wall[2]), int(wall[3]))
+                )
+
+        print("Walls loaded from", filename)
+
 
 class PygameEnviroment(Enviroment):
     def __init__(self, agent: Agent, walls: List[Wall] = [], color="black"):
@@ -124,7 +143,7 @@ class PygameEnviroment(Enviroment):
             width=4,
         )
 
-    def draw_sensors(self, window, n_sensors=10, max_distance=200):
+    def draw_sensors(self, window, n_sensors=10, max_distance=200, show_text=False):
         sensor_data = self.get_sensor_data(
             n_sensors=n_sensors, max_distance=max_distance
         )
@@ -148,3 +167,18 @@ class PygameEnviroment(Enviroment):
                 ),
                 width=2,
             )
+
+            if show_text:
+                font = pygame.font.Font(None, 24)
+                text = font.render(str(int(sensor_data[i][0])), True, "black")
+                window.blit(
+                    text,
+                    (
+                        self.agent.pos[0]
+                        + sensor_data[i][0]
+                        * np.cos(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                        self.agent.pos[1]
+                        + sensor_data[i][0]
+                        * np.sin(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                    ),
+                )
