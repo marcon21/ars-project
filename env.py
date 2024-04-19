@@ -42,27 +42,20 @@ class Enviroment:
                     # If the agent is moving towards the wall only consider the parallel component
                     move_vector = parallel_component
 
-        # def rotate_clock():
-        #     return np.array([[0, 1], [-1, 0]])
-
-        # top_start = (
-        #     self.agent.pos
-        #     + self.agent.direction_vector * rotate_clock() * self.agent.size
-        # )
-        # top_end = (
-        #     self.agent.pos
-        #     + move_vector
-        #     + self.agent.direction_vector * rotate_clock() * self.agent.size
-        # )
-        # bot_start = (
-        #     self.agent.pos
-        #     - self.agent.direction_vector * rotate_clock() * self.agent.size
-        # )
-        # bot_end = (
-        #     self.agent.pos
-        #     + move_vector
-        #     - self.agent.direction_vector * rotate_clock() * self.agent.size
-        # )
+        # Check if the agent is making an illegal move
+        for wall in self.walls:
+            intersection_point = intersection(
+                Wall(
+                    self.agent.pos[0],
+                    self.agent.pos[1],
+                    self.agent.pos[0] + move_vector[0],
+                    self.agent.pos[1] + move_vector[1],
+                ),
+                wall,
+            )
+            if intersection_point:
+                print("ILLEGAL MOVE")
+                return
 
         self.agent.apply_vector(move_vector)
 
