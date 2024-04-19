@@ -4,6 +4,5 @@ Repo for the project for the course Autonomous Robotic Systems
 
 TO-DO:
 
-- [ ] New robot movement with drift
-- [ ] Check for impossible movements
-- [ ] Profit ????
+- [x] New robot movement with drift
+- [x] Check for impossible movements
