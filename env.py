@@ -117,12 +117,12 @@ class PygameEnviroment(Enviroment):
             pygame.draw.line(window, "black", wall.start, wall.end, width=5)
 
         agent_color = self.agent.color
-        for wall in self.walls:
-            dist = distance_from_wall(wall, self.agent.pos)
-            if dist == self.agent.size:
-                agent_color = "blue"
-            if dist < self.agent.size:
-                agent_color = "red"
+        # for wall in self.walls:
+        #     dist = distance_from_wall(wall, self.agent.pos)
+        #     if dist == self.agent.size:
+        #         agent_color = "blue"
+        #     if dist < self.agent.size:
+        #         agent_color = "red"
 
         pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
 
@@ -145,7 +145,7 @@ class PygameEnviroment(Enviroment):
             c = "green"
             if sensor_data[i][1] is not None:
                 c = "red"
-                pygame.draw.circle(window, "red", sensor_data[i][1], 10)
+                pygame.draw.circle(window, "red", sensor_data[i][1], 3)
 
             pygame.draw.line(
                 window,

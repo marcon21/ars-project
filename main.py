@@ -9,7 +9,7 @@ import numpy as np
 
 # PYGAME SETUP
 pygame.init()
-GAME_RES = WIDTH, HEIGHT = 800, 600
+GAME_RES = WIDTH, HEIGHT = 1000, 1000
 FPS = 60
 GAME_TITLE = "ARS"
 window = pygame.display.set_mode(GAME_RES, HWACCEL | HWSURFACE | DOUBLEBUF)
@@ -24,7 +24,7 @@ base_move_speed = 50
 agent = Agent(
     x=window.get_width() / 2,
     y=window.get_height() / 2,
-    size=20,
+    size=30,
     move_speed=base_move_speed,
     color="green",
 )
@@ -113,7 +113,7 @@ while running:
         pygame.draw.line(window, "blue", start, (pygame.mouse.get_pos()), 5)
 
     # Change move speed based on last frame processing time
-    env.agent.move_speed = base_move_speed * dt * move_modifier * 1
+    env.agent.move_speed = base_move_speed * dt * move_modifier * 2
 
     # Take step in the phisic simulation and show the environment
     env.move_agent()
