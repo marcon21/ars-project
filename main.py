@@ -113,7 +113,7 @@ while running:
         pygame.draw.line(window, "blue", start, (pygame.mouse.get_pos()), 5)
 
     # Change move speed based on last frame processing time
-    env.agent.move_speed = base_move_speed * dt * move_modifier * 2
+    env.agent.move_speed = base_move_speed * dt * move_modifier * 20
 
     # Take step in the phisic simulation and show the environment
     env.move_agent()
