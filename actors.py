@@ -16,6 +16,7 @@ class Agent:
         self.color = color
         self.direction_vector = np.array([1, 0])
         self.move_speed = move_speed
+        self.turn_direction = 0
 
     @property
     def direction(self):

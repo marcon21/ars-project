@@ -14,7 +14,7 @@ class Enviroment:
     def add_wall(self, wall: Wall):
         self.walls.append(wall)
 
-    def move_agent(self):
+    def move_agent(self, dt=1 / 60):
         move_vector = self.agent.direction_vector * self.agent.move_speed
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
@@ -58,6 +58,7 @@ class Enviroment:
                 return
 
         self.agent.apply_vector(move_vector)
+        self.agent.rotate(self.agent.turn_direction / 10)
 
     def get_sensor_data(self, n_sensors=8, max_distance=200):
         sensor_data = []
@@ -126,13 +127,28 @@ class PygameEnviroment(Enviroment):
 
         pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
 
+        # pygame.draw.line(
+        #     window,
+        #     "black",
+        #     self.agent.pos,
+        #     (
+        #         self.agent.pos[0] + self.agent.size * np.cos(self.agent.direction),
+        #         self.agent.pos[1] + self.agent.size * np.sin(self.agent.direction),
+        #     ),
+        #     width=4,
+        # )
+
         pygame.draw.line(
             window,
             "black",
             self.agent.pos,
             (
-                self.agent.pos[0] + self.agent.size * np.cos(self.agent.direction),
-                self.agent.pos[1] + self.agent.size * np.sin(self.agent.direction),
+                self.agent.pos[0]
+                + self.agent.size
+                * np.cos(self.agent.direction + self.agent.turn_direction),
+                self.agent.pos[1]
+                + self.agent.size
+                * np.sin(self.agent.direction + self.agent.turn_direction),
             ),
             width=4,
         )

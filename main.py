@@ -37,7 +37,7 @@ def reset_agent():
     agent.direction_vector = np.array([1, 0])
 
 
-rotation_size = pi / 180 * 10
+rotation_size = pi / 180 * 5
 move_modifier = 1
 show_text = False
 start = None
@@ -71,10 +71,12 @@ while running:
                 running = False
             if event.key == K_q or event.key == K_LEFT:
                 # Rotate left
-                agent.rotate(-rotation_size)
+                # agent.rotate(-rotation_size)
+                agent.turn_direction -= rotation_size
             if event.key == K_e or event.key == K_RIGHT:
                 # Rotate right
-                agent.rotate(rotation_size)
+                # agent.rotate(rotation_size)
+                agent.turn_direction += rotation_size
             if event.key == K_n:
                 # Add wall to the environment
                 if start is None:
@@ -113,7 +115,7 @@ while running:
         pygame.draw.line(window, "blue", start, (pygame.mouse.get_pos()), 5)
 
     # Change move speed based on last frame processing time
-    env.agent.move_speed = base_move_speed * dt * move_modifier * 20
+    env.agent.move_speed = base_move_speed * dt * move_modifier * 2
 
     # Take step in the phisic simulation and show the environment
     env.move_agent()
