@@ -157,6 +157,7 @@ class Enviroment:
         with open(filename, "r") as f:
             for line in f:
                 landmark = line.split()
+                print(landmark)
                 self.add_landmark(
                     Landmark(int(landmark[0]), int(landmark[1]), int(landmark[2]))
                 )
