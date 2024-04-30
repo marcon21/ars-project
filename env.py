@@ -1,19 +1,25 @@
 import pygame
 from pygame.locals import *
 from typing import List
-from actors import Agent, Wall
-from utils import intersection, distance_from_wall
+from actors import Agent, Wall, Landmark
+from utils import intersection, distance_from_wall, intersection_line_circle
 import numpy as np
 from copy import deepcopy
 
 
 class Enviroment:
-    def __init__(self, agent: Agent, walls: List[Wall] = []) -> None:
+    def __init__(
+        self, agent: Agent, walls: List[Wall] = [], landmarks: List[Landmark] = []
+    ) -> None:
         self.walls = walls
         self.agent = agent
+        self.landmarks = landmarks
 
     def add_wall(self, wall: Wall):
         self.walls.append(wall)
+
+    def add_landmark(self, landmark: Landmark):
+        self.landmarks.append(landmark)
 
     def move_agent(self, dt=1 / 60):
         move_vector = self.agent.direction_vector * self.agent.move_speed
@@ -74,15 +80,36 @@ class Enviroment:
 
             d = max_distance
             int_point = None
-            for wall in self.walls:
-                intersection_point = intersection(sensor, wall)
+
+            # for wall in self.walls:
+            #     intersection_point = intersection(sensor, wall)
+            #     if intersection_point:
+            #         distance = np.linalg.norm(
+            #             np.array(intersection_point) - np.array(self.agent.pos)
+            #         )
+            #         if distance < d:
+            #             d = distance
+            #             int_point = intersection_point
+
+            for l in self.landmarks:
+                intersection_point = intersection_line_circle(sensor, l)
+                print(intersection_point)
                 if intersection_point:
-                    distance = np.linalg.norm(
-                        np.array(intersection_point) - np.array(self.agent.pos)
-                    )
-                    if distance < d:
-                        d = distance
-                        int_point = intersection_point
+                    for i in intersection_point:
+                        # is intersection point on the sensor?
+                        if (
+                            np.dot(
+                                np.array(i) - np.array(self.agent.pos),
+                                np.array(sensor.end) - np.array(self.agent.pos),
+                            )
+                            > 0
+                        ):
+                            distance = np.linalg.norm(
+                                np.array(i) - np.array(self.agent.pos)
+                            )
+                            if distance < d:
+                                d = distance
+                                int_point = i
 
             sensor_data.append((d, int_point))
 
@@ -140,20 +167,6 @@ class PygameEnviroment(Enviroment):
             ),
             width=4,
         )
-        # pygame.draw.line(
-        #     window,
-        #     "black",
-        #     self.agent.pos,
-        #     (
-        #         self.agent.pos[0]
-        #         + self.agent.size
-        #         * np.cos(self.agent.direction + self.agent.turn_direction),
-        #         self.agent.pos[1]
-        #         + self.agent.size
-        #         * np.sin(self.agent.direction + self.agent.turn_direction),
-        #     ),
-        #     width=4,
-        # )
 
         # Draw Estimated Path based on the agent direction
         path = []
@@ -165,8 +178,11 @@ class PygameEnviroment(Enviroment):
             if i % 3 == 0:
                 pygame.draw.circle(window, "blue", next_pos, 1)
             path.append(next_pos)
-
         # pygame.draw.lines(window, "blue", False, path, width=2)
+
+        # Draw landmarks
+        for landmark in self.landmarks:
+            pygame.draw.circle(window, landmark.color, landmark.pos, landmark.size)
 
     def draw_sensors(self, window, n_sensors=10, max_distance=200, show_text=False):
         sensor_data = self.get_sensor_data(
@@ -176,7 +192,7 @@ class PygameEnviroment(Enviroment):
             c = "green"
             if sensor_data[i][1] is not None:
                 c = "red"
-                pygame.draw.circle(window, "red", sensor_data[i][1], 3)
+                pygame.draw.circle(window, "red", sensor_data[i][1], 5)
 
             pygame.draw.line(
                 window,

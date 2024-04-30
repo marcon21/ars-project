@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from actors import Agent, Wall
+from actors import Agent, Wall, Landmark
 from env import PygameEnviroment, Enviroment
 from utils import intersection, distance_from_wall
 from math import pi
@@ -30,6 +30,11 @@ agent = Agent(
 )
 env = PygameEnviroment(agent=agent)
 env.load_walls("walls.txt")
+
+land1 = Landmark(100, 100, 30, "purple")
+land2 = Landmark(900, 900, 40, "purple")
+env.add_landmark(land1)
+env.add_landmark(land2)
 
 
 def reset_agent():

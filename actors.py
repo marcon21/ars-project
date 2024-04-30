@@ -9,6 +9,13 @@ class Wall:
         self.end = (x2, y2)
 
 
+class Landmark:
+    def __init__(self, x=0, y=0, size=40, color="green") -> None:
+        self.pos = np.array([x, y])
+        self.size = size
+        self.color = color
+
+
 class Agent:
     def __init__(self, x=0, y=0, move_speed=5, size=40, color="red") -> None:
         self.pos = np.array([x, y])

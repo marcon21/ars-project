@@ -90,3 +90,30 @@ def distance_from_wall(wall, point, coords=False):
 
 def distance(p1, p2):
     return np.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
+
+def intersection_line_circle(wall, circle):
+    y = wall.start[1] - circle.pos[1]
+    x = wall.start[0] - circle.pos[0]
+    dx = wall.end[0] - wall.start[0]
+    dy = wall.end[1] - wall.start[1]
+    dr = np.sqrt(dx**2 + dy**2)
+    D = x * dy - y * dx
+    delta = circle.size**2 * dr**2 - D**2
+
+    if delta < 0:
+        return None
+
+    sgn = lambda x: 1 if x >= 0 else -1
+    sign = sgn(dy)
+    if dy == 0:
+        sign = sgn(dx)
+    x1 = (D * dy + sign * dx * np.sqrt(delta)) / dr**2
+    y1 = (-D * dx + abs(dy) * np.sqrt(delta)) / dr**2
+    x2 = (D * dy - sign * dx * np.sqrt(delta)) / dr**2
+    y2 = (-D * dx - abs(dy) * np.sqrt(delta)) / dr**2
+
+    return (x1 + circle.pos[0], y1 + circle.pos[1]), (
+        x2 + circle.pos[0],
+        y2 + circle.pos[1],
+    )
