@@ -24,12 +24,14 @@ base_move_speed = 50
 agent = Agent(
     x=window.get_width() / 2,
     y=window.get_height() / 2,
-    size=30,
+    size=10,
     move_speed=base_move_speed,
     color="green",
 )
 env = PygameEnviroment(agent=agent)
 env.load_walls("walls.txt")
+env.load_landmarks("landmarks.txt")
+print(env.map())
 
 
 def reset_agent():
@@ -113,13 +115,13 @@ while running:
         pygame.draw.line(window, "blue", start, (pygame.mouse.get_pos()), 5)
 
     # Change move speed based on last frame processing time
-    env.agent.move_speed = base_move_speed * dt * move_modifier * 2
+    env.agent.move_speed = base_move_speed * dt * move_modifier * 1
 
     # Take step in the phisic simulation and show the environment
     env.move_agent()
     env.draw_sensors(window, n_sensors=20, max_distance=400, show_text=show_text)
     env.show(window)
-
+    # env.draw_wall_coordinates(window)
     # Update the display
     pygame.display.flip()
 

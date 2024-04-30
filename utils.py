@@ -1,4 +1,7 @@
 import numpy as np
+import sympy
+from sympy import Segment, Circle
+from math import sqrt
 
 
 def intersection(seg1, seg2):
@@ -90,3 +93,29 @@ def distance_from_wall(wall, point, coords=False):
 
 def distance(p1, p2):
     return np.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
+
+def points_on_circle(center, radius, resolution=100):
+    cx, cy = center
+    points = []
+    for theta in np.linspace(0, 2 * np.pi, resolution):
+        x = cx + radius * np.cos(theta)
+        y = cy + radius * np.sin(theta)
+        points.append((x, y))
+    return points
+
+
+def land_intersection(
+    circle_center, circle_radius, pt1, pt2, full_line=False, tangent_tol=1e-9
+):
+    x1, y1 = pt1
+    x2, y2 = pt2
+    c = Circle(circle_center, circle_radius)
+    segment = Segment((x1, y1), (x2, y2))
+    intersections = sympy.intersection(c, segment)
+    intersection = [point.coordinates for point in intersections]
+    coordinates = []
+    for x, y in intersection:
+        coordinates.append((float(x), float(y)))
+
+    return intersections
