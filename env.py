@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 from typing import List
 from actors import Agent, Wall, Landmark
-from utils import intersection, distance_from_wall, land_intersection
+from utils import intersection, distance_from_wall, circle_line_intersection
 import numpy as np
 import uuid
 import math
@@ -96,13 +96,13 @@ class Enviroment:
             sensor_data.append((d, int_point))
             for landmark in self.landmarks:
 
-                intersection_point_l = land_intersection(
+                intersection_point_l = circle_line_intersection(
                     (landmark.cord[0], landmark.cord[1]),
                     landmark.ray,
                     sensor.start,
                     sensor.end,
                 )
-                print(intersection_point_l)
+
                 if intersection_point_l:
 
                     distance_l = np.linalg.norm(
@@ -110,7 +110,7 @@ class Enviroment:
                     )
 
                     if distance_l < d:
-
+                        print(distance_l, intersection_point_l)
                         d = distance_l
                         int_point_l = intersection_point_l
 

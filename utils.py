@@ -1,7 +1,7 @@
 import numpy as np
 import sympy
 from sympy import Segment, Circle
-from math import sqrt
+from sympy import Point2D
 
 
 def intersection(seg1, seg2):
@@ -95,27 +95,51 @@ def distance(p1, p2):
     return np.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
 
-def points_on_circle(center, radius, resolution=100):
-    cx, cy = center
-    points = []
-    for theta in np.linspace(0, 2 * np.pi, resolution):
-        x = cx + radius * np.cos(theta)
-        y = cy + radius * np.sin(theta)
-        points.append((x, y))
-    return points
+def circle_line_intersection(circle_center, circle_radius, seg_start, seg_end):
+    """
+    Trova i punti di intersezione tra un cerchio e un segmento di retta.
 
+    Args:
+    circle_center: Tuple, coordinate del centro del cerchio.
+    circle_radius: float, raggio del cerchio.
+    seg_start: Tuple, coordinate del punto di inizio del segmento.
+    seg_end: Tuple, coordinate del punto di fine del segmento.
 
-def land_intersection(
-    circle_center, circle_radius, pt1, pt2, full_line=False, tangent_tol=1e-9
-):
-    x1, y1 = pt1
-    x2, y2 = pt2
-    c = Circle(circle_center, circle_radius)
-    segment = Segment((x1, y1), (x2, y2))
-    intersections = sympy.intersection(c, segment, evaluate=False)
-    intersection = [point.coordinates for point in intersections]
-    coordinates = []
-    for x, y in intersection:
-        coordinates.append((float(x), float(y)))
+    Returns:
+    List: Lista di tuple contenenti le coordinate dei punti di intersezione.
+    """
+    cx, cy = circle_center
+    r = circle_radius
+    x1, y1 = seg_start
+    x2, y2 = seg_end
 
-    return intersections
+    dx = x2 - x1
+    dy = y2 - y1
+    fx = x1 - cx
+    fy = y1 - cy
+
+    a = dx**2 + dy**2
+    b = 2 * (dx * fx + dy * fy)
+    c = fx**2 + fy**2 - r**2
+
+    discriminant = b**2 - 4 * a * c
+
+    if discriminant < 0:
+        # Nessuna intersezione
+        return []
+    elif discriminant == 0:
+        # Un punto di intersezione
+        t = -b / (2 * a)
+        x = x1 + t * dx
+        y = y1 + t * dy
+        return [(x, y)]
+    else:
+        # Due punti di intersezione
+        t1 = (-b + np.sqrt(discriminant)) / (2 * a)
+        t2 = (-b - np.sqrt(discriminant)) / (2 * a)
+        x1 = x1 + t1 * dx
+        y1 = y1 + t1 * dy
+        x2 = x1 + t2 * dx
+        y2 = y1 + t2 * dy
+
+        return (x1, y1)
