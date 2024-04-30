@@ -1,7 +1,4 @@
 import numpy as np
-import sympy
-from sympy import Segment, Circle
-from sympy import Point2D
 
 
 def intersection(seg1, seg2):
@@ -95,51 +92,28 @@ def distance(p1, p2):
     return np.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
 
-def circle_line_intersection(circle_center, circle_radius, seg_start, seg_end):
-    """
-    Trova i punti di intersezione tra un cerchio e un segmento di retta.
+def intersection_line_circle(wall, circle):
+    y = wall.start[1] - circle.pos[1]
+    x = wall.start[0] - circle.pos[0]
+    dx = wall.end[0] - wall.start[0]
+    dy = wall.end[1] - wall.start[1]
+    dr = np.sqrt(dx**2 + dy**2)
+    D = x * dy - y * dx
+    delta = circle.size**2 * dr**2 - D**2
 
-    Args:
-    circle_center: Tuple, coordinate del centro del cerchio.
-    circle_radius: float, raggio del cerchio.
-    seg_start: Tuple, coordinate del punto di inizio del segmento.
-    seg_end: Tuple, coordinate del punto di fine del segmento.
+    if delta < 0:
+        return None
 
-    Returns:
-    List: Lista di tuple contenenti le coordinate dei punti di intersezione.
-    """
-    cx, cy = circle_center
-    r = circle_radius
-    x1, y1 = seg_start
-    x2, y2 = seg_end
+    sgn = lambda x: 1 if x >= 0 else -1
+    sign = sgn(dy)
+    if dy == 0:
+        sign = sgn(dx)
+    x1 = (D * dy + sign * dx * np.sqrt(delta)) / dr**2
+    y1 = (-D * dx + abs(dy) * np.sqrt(delta)) / dr**2
+    x2 = (D * dy - sign * dx * np.sqrt(delta)) / dr**2
+    y2 = (-D * dx - abs(dy) * np.sqrt(delta)) / dr**2
 
-    dx = x2 - x1
-    dy = y2 - y1
-    fx = x1 - cx
-    fy = y1 - cy
-
-    a = dx**2 + dy**2
-    b = 2 * (dx * fx + dy * fy)
-    c = fx**2 + fy**2 - r**2
-
-    discriminant = b**2 - 4 * a * c
-
-    if discriminant < 0:
-        # Nessuna intersezione
-        return []
-    elif discriminant == 0:
-        # Un punto di intersezione
-        t = -b / (2 * a)
-        x = x1 + t * dx
-        y = y1 + t * dy
-        return [(x, y)]
-    else:
-        # Due punti di intersezione
-        t1 = (-b + np.sqrt(discriminant)) / (2 * a)
-        t2 = (-b - np.sqrt(discriminant)) / (2 * a)
-        x1 = x1 + t1 * dx
-        y1 = y1 + t1 * dy
-        x2 = x1 + t2 * dx
-        y2 = y1 + t2 * dy
-
-        return (x1, y1)
+    return (x1 + circle.pos[0], y1 + circle.pos[1]), (
+        x2 + circle.pos[0],
+        y2 + circle.pos[1],
+    )

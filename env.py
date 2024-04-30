@@ -2,9 +2,9 @@ import pygame
 from pygame.locals import *
 from typing import List
 from actors import Agent, Wall, Landmark
-from utils import intersection, distance_from_wall, circle_line_intersection
+from utils import intersection, distance_from_wall, intersection_line_circle
 import numpy as np
-import uuid
+from copy import deepcopy
 import math
 
 
@@ -22,8 +22,8 @@ class Enviroment:
     def add_landmark(self, landmark: Landmark):
         self.landmarks.append(landmark)
 
-    def move_agent(self):
-        move_vector = self.agent.direction_vector * self.agent.move_speed
+    def move_agent(self, dt=1 / 60):
+        self.move_vector = self.agent.direction_vector * self.agent.move_speed
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
 
@@ -35,7 +35,7 @@ class Enviroment:
                 wall_vector = wall_vector / np.linalg.norm(wall_vector)
 
                 # Vector of the agent parallel to the wall
-                parallel_component = np.dot(wall_vector, move_vector) * wall_vector
+                parallel_component = np.dot(wall_vector, self.move_vector) * wall_vector
 
                 # Vector of the agent perpendicular to the wall
                 wall_to_agent = self.agent.pos - np.array(
@@ -48,7 +48,7 @@ class Enviroment:
                 # Check if the agent is moving towards the wall
                 if np.dot(self.agent.direction_vector, -wall_to_agent) > 0:
                     # If the agent is moving towards the wall only consider the parallel component
-                    move_vector = parallel_component
+                    self.move_vector = parallel_component
 
         # Check if the agent is making an illegal move
         for wall in self.walls:
@@ -56,8 +56,8 @@ class Enviroment:
                 Wall(
                     self.agent.pos[0],
                     self.agent.pos[1],
-                    self.agent.pos[0] + move_vector[0],
-                    self.agent.pos[1] + move_vector[1],
+                    self.agent.pos[0] + self.move_vector[0],
+                    self.agent.pos[1] + self.move_vector[1],
                 ),
                 wall,
             )
@@ -65,11 +65,11 @@ class Enviroment:
                 print("ILLEGAL MOVE")
                 return
 
-        self.agent.apply_vector(move_vector)
+        self.agent.apply_vector(self.move_vector)
+        self.agent.rotate(self.agent.turn_direction / 10)
 
     def get_sensor_data(self, n_sensors=8, max_distance=200):
         sensor_data = []
-        sensor_data_landmarks = []
         for i in range(n_sensors):
             current_angle = self.agent.direction + i * np.pi / (n_sensors / 2)
             sensor = Wall(
@@ -80,9 +80,9 @@ class Enviroment:
             )
 
             d = max_distance
-
             int_point = None
-            int_point_l = None
+            orientation = None
+            signature = None
             for wall in self.walls:
                 intersection_point = intersection(sensor, wall)
                 if intersection_point:
@@ -92,38 +92,31 @@ class Enviroment:
                     if distance < d:
                         d = distance
                         int_point = intersection_point
+                        orientation = current_angle
+            for l in self.landmarks:
+                intersection_point = intersection_line_circle(sensor, l)
 
-            sensor_data.append((d, int_point))
-            for landmark in self.landmarks:
+                if intersection_point:
+                    for i in intersection_point:
+                        # is intersection point on the sensor?
+                        if (
+                            np.dot(
+                                np.array(i) - np.array(self.agent.pos),
+                                np.array(sensor.end) - np.array(self.agent.pos),
+                            )
+                            > 0
+                        ):
+                            distance = np.linalg.norm(
+                                np.array(i) - np.array(self.agent.pos)
+                            )
+                            if distance < d:
+                                d = distance
+                                int_point = i
+                                orientation = current_angle
+                                signature = l.signature
 
-                intersection_point_l = circle_line_intersection(
-                    (landmark.cord[0], landmark.cord[1]),
-                    landmark.ray,
-                    sensor.start,
-                    sensor.end,
-                )
-
-                if intersection_point_l:
-
-                    distance_l = np.linalg.norm(
-                        np.array(intersection_point_l) - np.array(self.agent.pos)
-                    )
-
-                    if distance_l < d:
-                        print(distance_l, intersection_point_l)
-                        d = distance_l
-                        int_point_l = intersection_point_l
-
-                    orientation = (
-                        math.atan2(
-                            landmark.cord[1] - self.agent.pos[1],
-                            landmark.cord[0] - self.agent.pos[0],
-                        )
-                        - current_angle
-                    )
-
-            sensor_data_landmarks.append((d, int_point_l))
-        return sensor_data, sensor_data_landmarks
+            sensor_data.append((int_point, (d, orientation, signature)))
+        return sensor_data
 
     def save_walls(self, filename):
         with open(filename, "w") as f:
@@ -145,79 +138,94 @@ class Enviroment:
 
         print("Walls loaded from", filename)
 
-    def save_landmarks(self, filename):
-        with open(filename, "w") as f:
-            for landmark in self.landmarks:
-                f.write(f"{landmark.cord[0]} {landmark.cord[1]} {landmark.ray[1]}\n")
 
-        print("Landmark saved to", filename)
+class Kalman_Filter(Enviroment):
 
-    def load_landmarks(self, filename):
-        self.landmarks = []
-        with open(filename, "r") as f:
-            for line in f:
-                landmark = line.split()
-                print(landmark)
-                self.add_landmark(
-                    Landmark(int(landmark[0]), int(landmark[1]), int(landmark[2]))
-                )
+    def __init__(self, agent: Agent, initial_mean, initial_cov_matrix, R, Q):
 
-        print("Landmark loaded from", filename)
+        self.agent = agent
+        self.mean = initial_mean
+        self.cov_matrix = initial_cov_matrix
+        self.R = R
+        self.Q = Q
 
-    def map(self):
-        self.coordinates = []
-        for wall in self.walls:
-            segment_points = bresenham_line(
-                wall.start[0], wall.start[1], wall.end[0], wall.end[1]
-            )
-            for point in segment_points:
-                self.coordinates.append((point, 0))
+    def measurements(self):
+        mu = np.array([0, 0, 0])
+        sensor_data = self.get_sensor_data(self.agent.n_sensors)
+        for el in sensor_data:
 
-    def density_estimation(self, map, previous_location, control, measurement):
+            if el[0] != None:
+                samples = np.random.multivariate_normal(mu, self.Q, 1)[0]
 
-        return
+                distance, orientation, signature = el[1]
+                x = el[0][0] + (el[1][0]) * np.cos(orientation) + samples[0]
+                y = el[0][1] + (el[1][0]) * np.sin(orientation) + samples[1]
+                sensor_vector = el[2][1] - el[2][0]
+                angle = np.arctan2(sensor_vector[1], sensor_vector[0])
+                theta = angle + orientation + samples[2]
 
+                return x, y, theta
+            else:
+                return None
 
-def bresenham_line(x0, y0, x1, y1):
-    points = []
-    dx = abs(x1 - x0)
-    dy = abs(y1 - y0)
-    sx = -1 if x0 > x1 else 1
-    sy = -1 if y0 > y1 else 1
-    err = dx - dy
+    def prediction(self):
+        mean = np.array([0, 0, 0])
+        samples = np.random.multivariate_normal(mean, self.R, 1)[0]
+        self.mean[0] = (
+            self.mean[0]
+            + self.agent.direction_vector * self.agent.move_speed[0]
+            + samples[0]
+        )
+        self.mean[1] = (
+            self.mean[1]
+            + self.agent.direction_vector * self.agent.move_speed[1]
+            + samples[1]
+        )
+        self.mean[2] = (
+            np.arctan2(self.agent.direction_vector[1], self.agent.direction_vector[0])
+            + samples[2]
+        )
+        self.cov_matrix = self.cov_matrix + self.R
 
-    while x0 != x1 or y0 != y1:
-        points.append((x0, y0))
-        e2 = 2 * err
-        if e2 > -dy:
-            err -= dy
-            x0 += sx
-        if e2 < dx:
-            err += dx
-            y0 += sy
+    def correction(self):
+        print("true position", self.agent.pos)
+        print("prediction", self.mean, self.cov_matrix)
+        print("measurments", x, y, theta)
 
-    points.append((x1, y1))
-    return points
+        K = np.dot(
+            self.cov_matrix,
+            np.dot(
+                np.eye(3).T,
+                np.linalg.inv(
+                    np.dot(np.eye(3), np.dot(self.cov_matrix, np.eye(3).T) + self.Q)
+                ),
+            ),
+        )
+        self.prediction()
+        meas = self.measurements()
+        if meas:
+            x, y, theta = self.measurements()
+            self.mean = self.mean + np.dot(K, (x, y, theta) - self.mean)
+            self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
+            print("correction", self.measurements)
+        else:
+            self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
 
 
 class PygameEnviroment(Enviroment):
     def __init__(
-        self,
-        agent: Agent,
-        walls: List[Wall] = [],
-        landmarks: List[Landmark] = [],
-        color="black",
+        self, agent: Agent, kf: Kalman_Filter, walls: List[Wall] = [], color="black"
     ):
-        super().__init__(agent, walls=walls, landmarks=landmarks)
+        super().__init__(agent, walls=walls)
+        self.kf = kf
+
         pass
 
     def show(self, window):
+
         for wall in self.walls:
+
             pygame.draw.line(window, "black", wall.start, wall.end, width=5)
-        for landmark in self.landmarks:
-            pygame.draw.circle(
-                window, "red", (landmark.cord[0], landmark.cord[0]), landmark.ray
-            )
 
         agent_color = self.agent.color
         # for wall in self.walls:
@@ -227,8 +235,10 @@ class PygameEnviroment(Enviroment):
         #     if dist < self.agent.size:
         #         agent_color = "red"
 
+        # Draw agent
         pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
 
+        # Draw agent direction
         pygame.draw.line(
             window,
             "black",
@@ -240,56 +250,50 @@ class PygameEnviroment(Enviroment):
             width=4,
         )
 
+        # Draw Estimated Path based on the agent direction
+        path = []
+        temp_agent = deepcopy(self.agent)
+        for i in range(500):
+            temp_agent.apply_vector(temp_agent.direction_vector * temp_agent.move_speed)
+            temp_agent.rotate(temp_agent.turn_direction / 10)
+            next_pos = (temp_agent.pos[0], temp_agent.pos[1])
+            if i % 3 == 0:
+                pygame.draw.circle(window, "blue", next_pos, 1)
+            path.append(next_pos)
+        # pygame.draw.lines(window, "blue", False, path, width=2)
+
+        # Draw landmarks
+        for landmark in self.landmarks:
+            pygame.draw.circle(window, landmark.color, landmark.pos, landmark.size)
+
     def draw_sensors(self, window, n_sensors=10, max_distance=200, show_text=False):
-        sensor_data, sensor_data_landmarks = self.get_sensor_data(
+        sensor_data = self.get_sensor_data(
             n_sensors=n_sensors, max_distance=max_distance
         )
         for i in range(n_sensors):
             c = "green"
-            """
-            if sensor_data[i][1] is not None:
+            if sensor_data[i][0] is not None:
                 c = "red"
-                pygame.draw.circle(window, "red", sensor_data[i][1], 3)
-            """
-            if sensor_data_landmarks[i][1] is not None:
-                c = "red"
-                pygame.draw.circle(window, "red", sensor_data_landmarks[i][1], 3)
+                pygame.draw.circle(window, "red", sensor_data[i][0], 5)
+
             pygame.draw.line(
                 window,
                 c,
                 self.agent.pos,
                 (
                     self.agent.pos[0]
-                    + sensor_data_landmarks[i][0]
+                    + sensor_data[i][1][0]
                     * np.cos(self.agent.direction + i * np.pi / (n_sensors / 2)),
                     self.agent.pos[1]
-                    + sensor_data_landmarks[i][0]
+                    + sensor_data[i][1][0]
                     * np.sin(self.agent.direction + i * np.pi / (n_sensors / 2)),
                 ),
                 width=2,
             )
 
-
-"""'
-            pygame.draw.line(
-                window,
-                c,
-                self.agent.pos,q
-                (
-                    self.agent.pos[0]
-                    + sensor_data[i][0]
-                    * np.cos(self.agent.direction + i * np.pi / (n_sensors / 2)),
-                    self.agent.pos[1]
-                    + sensor_data[i][0]
-                    * np.sin(self.agent.direction + i * np.pi / (n_sensors / 2)),
-                ),
-                width=2,
-            )
-
-\
             if show_text:
                 font = pygame.font.Font(None, 24)
-                text = font.render(str(int(sensor_data[i][0])), True, "black")
+                text = font.render(str(int(sensor_data[i][0][0])), True, "black")
                 window.blit(
                     text,
                     (
@@ -301,9 +305,3 @@ class PygameEnviroment(Enviroment):
                         * np.sin(self.agent.direction + i * np.pi / (n_sensors / 2)),
                     ),
                 )
-
-    def draw_wall_coordinates(self, window):
-        for cordinates in self.coordinates:
-            pygame.draw.rect(
-                window, "red", pygame.Rect(cordinates[0][0], cordinates[0][1], 1, 1)
-            )"""

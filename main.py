@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
-from actors import Agent, Wall
-from env import PygameEnviroment, Enviroment
+from actors import Agent, Wall, Landmark
+from env import PygameEnviroment, Enviroment, Kalman_Filter
 from utils import intersection, distance_from_wall
 from math import pi
 import numpy as np
@@ -24,14 +24,23 @@ base_move_speed = 50
 agent = Agent(
     x=window.get_width() / 2,
     y=window.get_height() / 2,
-    size=10,
+    size=30,
     move_speed=base_move_speed,
     color="green",
 )
-env = PygameEnviroment(agent=agent)
-env.load_walls("walls.txt")
-env.load_landmarks("landmarks.txt")
-print(env.map())
+mean = np.array([50, 50, 50])
+cov_matrix = np.diag([4, 5, 6])
+R = np.diag([4, 5, 6])
+Q = np.diag([4, 5, 6])
+kfr = Kalman_Filter(agent, mean, cov_matrix, R, Q)
+env = PygameEnviroment(agent=agent, kf=kfr)
+# env.load_walls("walls.txt")
+
+land1 = Landmark(100, 100, 50, "a", "purple")
+land2 = Landmark(900, 900, 40, "b", "purple")
+land3 = Landmark(500, 500, 40, "c", "purple")
+env.add_landmark(land1)
+env.add_landmark(land2)
 
 
 def reset_agent():
@@ -39,7 +48,7 @@ def reset_agent():
     agent.direction_vector = np.array([1, 0])
 
 
-rotation_size = pi / 180 * 10
+rotation_size = pi / 180 * 2
 move_modifier = 1
 show_text = False
 start = None
@@ -73,10 +82,12 @@ while running:
                 running = False
             if event.key == K_q or event.key == K_LEFT:
                 # Rotate left
-                agent.rotate(-rotation_size)
+                # agent.rotate(-rotation_size)
+                agent.turn_direction -= rotation_size
             if event.key == K_e or event.key == K_RIGHT:
                 # Rotate right
-                agent.rotate(rotation_size)
+                # agent.rotate(rotation_size)
+                agent.turn_direction += rotation_size
             if event.key == K_n:
                 # Add wall to the environment
                 if start is None:
@@ -115,13 +126,13 @@ while running:
         pygame.draw.line(window, "blue", start, (pygame.mouse.get_pos()), 5)
 
     # Change move speed based on last frame processing time
-    env.agent.move_speed = base_move_speed * dt * move_modifier * 1
+    env.agent.move_speed = base_move_speed * dt * move_modifier * 2
 
     # Take step in the phisic simulation and show the environment
     env.move_agent()
     env.draw_sensors(window, n_sensors=20, max_distance=400, show_text=show_text)
     env.show(window)
-    # env.draw_wall_coordinates(window)
+
     # Update the display
     pygame.display.flip()
 
