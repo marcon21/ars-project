@@ -93,7 +93,7 @@ class Enviroment:
 
             for l in self.landmarks:
                 intersection_point = intersection_line_circle(sensor, l)
-                print(intersection_point)
+
                 if intersection_point:
                     for i in intersection_point:
                         # is intersection point on the sensor?
