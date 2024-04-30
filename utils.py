@@ -112,7 +112,7 @@ def land_intersection(
     x2, y2 = pt2
     c = Circle(circle_center, circle_radius)
     segment = Segment((x1, y1), (x2, y2))
-    intersections = sympy.intersection(c, segment)
+    intersections = sympy.intersection(c, segment, evaluate=False)
     intersection = [point.coordinates for point in intersections]
     coordinates = []
     for x, y in intersection:
