@@ -81,15 +81,15 @@ class Enviroment:
             d = max_distance
             int_point = None
 
-            # for wall in self.walls:
-            #     intersection_point = intersection(sensor, wall)
-            #     if intersection_point:
-            #         distance = np.linalg.norm(
-            #             np.array(intersection_point) - np.array(self.agent.pos)
-            #         )
-            #         if distance < d:
-            #             d = distance
-            #             int_point = intersection_point
+            for wall in self.walls:
+                intersection_point = intersection(sensor, wall)
+                if intersection_point:
+                    distance = np.linalg.norm(
+                        np.array(intersection_point) - np.array(self.agent.pos)
+                    )
+                    if distance < d:
+                        d = distance
+                        int_point = intersection_point
 
             for l in self.landmarks:
                 intersection_point = intersection_line_circle(sensor, l)
