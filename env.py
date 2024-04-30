@@ -4,6 +4,7 @@ from typing import List
 from actors import Agent, Wall
 from utils import intersection, distance_from_wall
 import numpy as np
+from copy import deepcopy
 
 
 class Enviroment:
@@ -125,33 +126,47 @@ class PygameEnviroment(Enviroment):
         #     if dist < self.agent.size:
         #         agent_color = "red"
 
+        # Draw agent
         pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
 
-        # pygame.draw.line(
-        #     window,
-        #     "black",
-        #     self.agent.pos,
-        #     (
-        #         self.agent.pos[0] + self.agent.size * np.cos(self.agent.direction),
-        #         self.agent.pos[1] + self.agent.size * np.sin(self.agent.direction),
-        #     ),
-        #     width=4,
-        # )
-
+        # Draw agent direction
         pygame.draw.line(
             window,
             "black",
             self.agent.pos,
             (
-                self.agent.pos[0]
-                + self.agent.size
-                * np.cos(self.agent.direction + self.agent.turn_direction),
-                self.agent.pos[1]
-                + self.agent.size
-                * np.sin(self.agent.direction + self.agent.turn_direction),
+                self.agent.pos[0] + self.agent.size * np.cos(self.agent.direction),
+                self.agent.pos[1] + self.agent.size * np.sin(self.agent.direction),
             ),
             width=4,
         )
+        # pygame.draw.line(
+        #     window,
+        #     "black",
+        #     self.agent.pos,
+        #     (
+        #         self.agent.pos[0]
+        #         + self.agent.size
+        #         * np.cos(self.agent.direction + self.agent.turn_direction),
+        #         self.agent.pos[1]
+        #         + self.agent.size
+        #         * np.sin(self.agent.direction + self.agent.turn_direction),
+        #     ),
+        #     width=4,
+        # )
+
+        # Draw Estimated Path based on the agent direction
+        path = []
+        temp_agent = deepcopy(self.agent)
+        for i in range(500):
+            temp_agent.apply_vector(temp_agent.direction_vector * temp_agent.move_speed)
+            temp_agent.rotate(temp_agent.turn_direction / 10)
+            next_pos = (temp_agent.pos[0], temp_agent.pos[1])
+            if i % 3 == 0:
+                pygame.draw.circle(window, "blue", next_pos, 1)
+            path.append(next_pos)
+
+        # pygame.draw.lines(window, "blue", False, path, width=2)
 
     def draw_sensors(self, window, n_sensors=10, max_distance=200, show_text=False):
         sensor_data = self.get_sensor_data(

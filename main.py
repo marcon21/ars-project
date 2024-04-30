@@ -37,7 +37,7 @@ def reset_agent():
     agent.direction_vector = np.array([1, 0])
 
 
-rotation_size = pi / 180 * 5
+rotation_size = pi / 180 * 2
 move_modifier = 1
 show_text = False
 start = None
