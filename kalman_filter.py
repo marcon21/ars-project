@@ -17,11 +17,13 @@ class Kalman_Filter:
 
     def measurements(self):
         mu = np.array([0, 0, 0])
-        sensor_data = self.env.get_sensor_data(self.agent.n_sensors)
+        sensor_data = self.env.get_sensor_data(
+            n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance
+        )
 
         for el in sensor_data:
-            print(el)
             if el[0] is not None:
+                print(el)
 
                 samples = np.random.multivariate_normal(mu, self.Q, 1)[0]
 

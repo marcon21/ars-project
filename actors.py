@@ -19,7 +19,14 @@ class Landmark:
 
 class Agent:
     def __init__(
-        self, x=0, y=0, move_speed=5, size=40, n_sensors=10, color="red"
+        self,
+        x=0,
+        y=0,
+        move_speed=5,
+        size=40,
+        n_sensors=10,
+        max_distance=200,
+        color="red",
     ) -> None:
         self.pos = np.array([x, y])
         self.size = size
@@ -28,6 +35,7 @@ class Agent:
         self.move_speed = move_speed
         self.turn_direction = 0
         self.n_sensors = n_sensors
+        self.max_distance = max_distance
         self.path = [(x, y)]
 
     @property

@@ -27,6 +27,8 @@ agent = Agent(
     y=window.get_height() / 2,
     size=30,
     move_speed=base_move_speed,
+    n_sensors=10,
+    max_distance=200,
     color="green",
 )
 mean = np.array([agent.pos[0], agent.pos[1], 250])
@@ -137,7 +139,7 @@ while running:
 
     # Take step in the phisic simulation and show the environment
     env.move_agent()
-    env.draw_sensors(window, n_sensors=20, max_distance=400, show_text=show_text)
+    env.draw_sensors(window, show_text=show_text)
     env.show(window)
 
     kfr.correction()

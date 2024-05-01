@@ -115,7 +115,9 @@ class Enviroment:
                                 orientation = current_angle
                                 signature = l.signature
 
-            sensor_data.append((int_point, (d, orientation, signature)))
+            sensor_data.append(
+                (int_point, (d, orientation, signature), (sensor.start, sensor.end))
+            )
         return sensor_data
 
     def save_walls(self, filename):
@@ -197,11 +199,11 @@ class PygameEnviroment(Enviroment):
         for landmark in self.landmarks:
             pygame.draw.circle(window, landmark.color, landmark.pos, landmark.size)
 
-    def draw_sensors(self, window, n_sensors=10, max_distance=200, show_text=False):
+    def draw_sensors(self, window, show_text=False):
         sensor_data = self.get_sensor_data(
-            n_sensors=n_sensors, max_distance=max_distance
+            n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance
         )
-        for i in range(n_sensors):
+        for i in range(self.agent.n_sensors):
             c = "green"
             if sensor_data[i][0] is not None:
                 c = "red"
@@ -214,10 +216,14 @@ class PygameEnviroment(Enviroment):
                 (
                     self.agent.pos[0]
                     + sensor_data[i][1][0]
-                    * np.cos(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                    * np.cos(
+                        self.agent.direction + i * np.pi / (self.agent.n_sensors / 2)
+                    ),
                     self.agent.pos[1]
                     + sensor_data[i][1][0]
-                    * np.sin(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                    * np.sin(
+                        self.agent.direction + i * np.pi / (self.agent.n_sensors / 2)
+                    ),
                 ),
                 width=2,
             )
@@ -230,9 +236,15 @@ class PygameEnviroment(Enviroment):
                     (
                         self.agent.pos[0]
                         + sensor_data[i][0]
-                        * np.cos(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                        * np.cos(
+                            self.agent.direction
+                            + i * np.pi / (self.agent.n_sensors / 2)
+                        ),
                         self.agent.pos[1]
                         + sensor_data[i][0]
-                        * np.sin(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                        * np.sin(
+                            self.agent.direction
+                            + i * np.pi / (self.agent.n_sensors / 2)
+                        ),
                     ),
                 )
