@@ -8,6 +8,7 @@ from copy import deepcopy
 import math
 
 
+
 class Enviroment:
     def __init__(
         self, agent: Agent, walls: List[Wall] = [], landmarks: List[Landmark] = []
@@ -23,7 +24,8 @@ class Enviroment:
         self.landmarks.append(landmark)
 
     def move_agent(self, dt=1 / 60):
-        self.move_vector = self.agent.direction_vector * self.agent.move_speed
+        move_vector = self.agent.direction_vector * self.agent.move_speed
+        
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
 
@@ -65,7 +67,8 @@ class Enviroment:
                 print("ILLEGAL MOVE")
                 return
 
-        self.agent.apply_vector(self.move_vector)
+
+        self.agent.apply_vector(move_vector)
         self.agent.rotate(self.agent.turn_direction / 10)
 
     def get_sensor_data(self, n_sensors=8, max_distance=200):
@@ -83,6 +86,7 @@ class Enviroment:
             int_point = None
             orientation = None
             signature = None
+
             for wall in self.walls:
                 intersection_point = intersection(sensor, wall)
                 if intersection_point:
@@ -118,6 +122,7 @@ class Enviroment:
             sensor_data.append(
                 (int_point, (d, orientation, signature), (sensor.start, sensor.end))
             )
+
         return sensor_data
 
     def save_walls(self, filename):
@@ -209,6 +214,7 @@ class PygameEnviroment(Enviroment):
             if sensor_data[i][0] is not None:
                 c = "red"
                 pygame.draw.circle(window, "red", sensor_data[i][0], 5)
+
 
             pygame.draw.line(
                 window,

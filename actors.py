@@ -38,6 +38,7 @@ class Agent:
         self.max_distance = max_distance
         self.path = [(x, y)]
 
+
     @property
     def direction(self):
         return np.arctan2(self.direction_vector[1], self.direction_vector[0])
