@@ -203,6 +203,7 @@ class PygameEnviroment(Enviroment):
         sensor_data = self.get_sensor_data(
             n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance
         )
+
         for i in range(self.agent.n_sensors):
             c = "green"
             if sensor_data[i][0] is not None:

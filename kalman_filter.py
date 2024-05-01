@@ -21,22 +21,24 @@ class Kalman_Filter:
             n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance
         )
 
-        for el in sensor_data:
-            if el[0] is not None:
-                print(el)
+        for i in range(len(sensor_data)):
+
+            interception = sensor_data[i][0]
+
+            if interception is not None:
 
                 samples = np.random.multivariate_normal(mu, self.Q, 1)[0]
 
-                distance, orientation, signature = el[1]
-                x = el[0][0] + (el[1][0]) * np.cos(orientation) + samples[0]
-                y = el[0][1] + (el[1][0]) * np.sin(orientation) + samples[1]
-                sensor_vector = el[2][1] - el[2][0]
+                distance, orientation, signature = sensor_data[i][1]
+                sensor_start = sensor_data[i][2][0]
+                sensor_end = sensor_data[i][2][1]
+                x = interception[0] + (distance) * np.cos(orientation) + samples[0]
+                y = interception[1] + (distance) * np.sin(orientation) + samples[1]
+                sensor_vector = np.array(sensor_end) - np.array(sensor_start)
                 angle = np.arctan2(sensor_vector[1], sensor_vector[0])
                 theta = angle + orientation + samples[2]
 
                 return x, y, theta
-            else:
-                return None
 
     def prediction(self):
         mu = np.array([0, 0, 0])
@@ -73,9 +75,11 @@ class Kalman_Filter:
         self.prediction()
         meas = self.measurements()
         if meas:
+
             x, y, theta = meas
-            # print("measurments", x, y, theta)
+            print("measurments", x, y, theta)
             self.mean = self.mean + np.dot(K, (x, y, theta) - self.mean)
+            print("stima", self.mean)
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
 
         else:
