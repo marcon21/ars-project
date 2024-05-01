@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from actors import Agent, Wall
+from actors import Agent, Wall, Landmark
 from env import PygameEnviroment, Enviroment
 from utils import intersection, distance_from_wall
 from math import pi
@@ -31,14 +31,19 @@ agent = Agent(
 env = PygameEnviroment(agent=agent)
 env.load_walls("walls.txt")
 
+land1 = Landmark(100, 100, 30, "purple")
+land2 = Landmark(900, 900, 40, "purple")
+env.add_landmark(land1)
+env.add_landmark(land2)
+
 
 def reset_agent():
     agent.pos = (window.get_width() / 2, window.get_height() / 2)
     agent.direction_vector = np.array([1, 0])
 
 
-rotation_size = pi / 180 * 10
-move_modifier = 1
+rotation_size = pi / 180 * 2
+pause_state = False
 show_text = False
 start = None
 end = None
@@ -71,10 +76,12 @@ while running:
                 running = False
             if event.key == K_q or event.key == K_LEFT:
                 # Rotate left
-                agent.rotate(-rotation_size)
+                # agent.rotate(-rotation_size)
+                agent.turn_direction -= rotation_size
             if event.key == K_e or event.key == K_RIGHT:
                 # Rotate right
-                agent.rotate(rotation_size)
+                # agent.rotate(rotation_size)
+                agent.turn_direction += rotation_size
             if event.key == K_n:
                 # Add wall to the environment
                 if start is None:
@@ -103,20 +110,19 @@ while running:
                 show_text = not show_text
             if event.key == K_SPACE:
                 # Toggle movement
-                if move_modifier:
-                    move_modifier = 0
-                else:
-                    move_modifier = 1
+                pause_state = not pause_state
 
     # Draw wall being added
     if start is not None:
         pygame.draw.line(window, "blue", start, (pygame.mouse.get_pos()), 5)
 
     # Change move speed based on last frame processing time
-    env.agent.move_speed = base_move_speed * dt * move_modifier * 20
+    env.agent.move_speed = base_move_speed * dt * 2
 
     # Take step in the phisic simulation and show the environment
-    env.move_agent()
+    if not pause_state:
+        env.move_agent()
+
     env.draw_sensors(window, n_sensors=20, max_distance=400, show_text=show_text)
     env.show(window)
 
