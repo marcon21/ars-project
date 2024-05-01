@@ -27,7 +27,7 @@ base_move_speed = 50
 agent = Agent(
     x=rand() * window.get_width(),
     y=rand() * window.get_height(),
-    size=30,
+    size=10,
     move_speed=base_move_speed,
     n_sensors=10,
     max_distance=200,
@@ -36,8 +36,8 @@ agent = Agent(
 mean = np.array([agent.pos[0], agent.pos[1], agent.direction])
 # mean = np.array([window.get_width() / 2, window.get_height() / 2, agent.direction])
 cov_matrix = np.diag([0.002, 0.002, 0.002])
-R = np.diag([0.0000001, 0.0000002, 0.0000002])
-Q = np.diag([0.00000002, 0.00000002, 0.0000002])
+R = np.diag([0.1, 0.2, 0.2])
+Q = np.diag([0.1, 0.1, 0.1])
 env = PygameEnviroment(agent=agent)
 # env.load_walls("walls.txt")
 

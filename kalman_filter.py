@@ -65,12 +65,7 @@ class Kalman_Filter:
 
         K = np.dot(
             self.cov_matrix,
-            np.dot(
-                np.eye(3).T,
-                np.linalg.inv(
-                    np.dot(np.eye(3), np.dot(self.cov_matrix, np.eye(3).T) + self.Q)
-                ),
-            ),
+            np.linalg.inv(self.cov_matrix + self.Q),
         )
         self.prediction()
         meas = self.measurements()
