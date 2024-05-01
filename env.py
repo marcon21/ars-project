@@ -5,6 +5,8 @@ from actors import Agent, Wall, Landmark
 from utils import intersection, distance_from_wall, intersection_line_circle
 import numpy as np
 from copy import deepcopy
+import math
+
 
 
 class Enviroment:
@@ -23,6 +25,7 @@ class Enviroment:
 
     def move_agent(self, dt=1 / 60):
         move_vector = self.agent.direction_vector * self.agent.move_speed
+        
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
 
@@ -34,7 +37,7 @@ class Enviroment:
                 wall_vector = wall_vector / np.linalg.norm(wall_vector)
 
                 # Vector of the agent parallel to the wall
-                parallel_component = np.dot(wall_vector, move_vector) * wall_vector
+                parallel_component = np.dot(wall_vector, self.move_vector) * wall_vector
 
                 # Vector of the agent perpendicular to the wall
                 wall_to_agent = self.agent.pos - np.array(
@@ -47,7 +50,7 @@ class Enviroment:
                 # Check if the agent is moving towards the wall
                 if np.dot(self.agent.direction_vector, -wall_to_agent) > 0:
                     # If the agent is moving towards the wall only consider the parallel component
-                    move_vector = parallel_component
+                    self.move_vector = parallel_component
 
         # Check if the agent is making an illegal move
         for wall in self.walls:
@@ -55,14 +58,15 @@ class Enviroment:
                 Wall(
                     self.agent.pos[0],
                     self.agent.pos[1],
-                    self.agent.pos[0] + move_vector[0],
-                    self.agent.pos[1] + move_vector[1],
+                    self.agent.pos[0] + self.move_vector[0],
+                    self.agent.pos[1] + self.move_vector[1],
                 ),
                 wall,
             )
             if intersection_point:
                 print("ILLEGAL MOVE")
                 return
+
 
         self.agent.apply_vector(move_vector)
         self.agent.rotate(self.agent.turn_direction / 10)
@@ -80,6 +84,8 @@ class Enviroment:
 
             d = max_distance
             int_point = None
+            orientation = None
+            signature = None
 
             for wall in self.walls:
                 intersection_point = intersection(sensor, wall)
@@ -90,7 +96,7 @@ class Enviroment:
                     if distance < d:
                         d = distance
                         int_point = intersection_point
-
+                        orientation = current_angle
             for l in self.landmarks:
                 intersection_point = intersection_line_circle(sensor, l)
 
@@ -110,8 +116,12 @@ class Enviroment:
                             if distance < d:
                                 d = distance
                                 int_point = i
+                                orientation = current_angle
+                                signature = l.signature
 
-            sensor_data.append((d, int_point))
+            sensor_data.append(
+                (int_point, (d, orientation, signature), (sensor.start, sensor.end))
+            )
 
         return sensor_data
 
@@ -139,10 +149,13 @@ class Enviroment:
 class PygameEnviroment(Enviroment):
     def __init__(self, agent: Agent, walls: List[Wall] = [], color="black"):
         super().__init__(agent, walls=walls)
+
         pass
 
     def show(self, window):
+
         for wall in self.walls:
+
             pygame.draw.line(window, "black", wall.start, wall.end, width=5)
 
         agent_color = self.agent.color
@@ -155,6 +168,13 @@ class PygameEnviroment(Enviroment):
 
         # Draw agent
         pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
+        for point in self.agent.path:
+            index = self.agent.path.index(point)
+            final_index = len(self.agent.path) - 1
+            if index > 0 and index < final_index:
+                pygame.draw.lines(
+                    window, "black", False, [point, self.agent.path[index + 1]], 2
+                )
 
         # Draw agent direction
         pygame.draw.line(
@@ -184,15 +204,17 @@ class PygameEnviroment(Enviroment):
         for landmark in self.landmarks:
             pygame.draw.circle(window, landmark.color, landmark.pos, landmark.size)
 
-    def draw_sensors(self, window, n_sensors=10, max_distance=200, show_text=False):
+    def draw_sensors(self, window, show_text=False):
         sensor_data = self.get_sensor_data(
-            n_sensors=n_sensors, max_distance=max_distance
+            n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance
         )
-        for i in range(n_sensors):
+
+        for i in range(self.agent.n_sensors):
             c = "green"
-            if sensor_data[i][1] is not None:
+            if sensor_data[i][0] is not None:
                 c = "red"
-                pygame.draw.circle(window, "red", sensor_data[i][1], 5)
+                pygame.draw.circle(window, "red", sensor_data[i][0], 5)
+
 
             pygame.draw.line(
                 window,
@@ -200,26 +222,36 @@ class PygameEnviroment(Enviroment):
                 self.agent.pos,
                 (
                     self.agent.pos[0]
-                    + sensor_data[i][0]
-                    * np.cos(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                    + sensor_data[i][1][0]
+                    * np.cos(
+                        self.agent.direction + i * np.pi / (self.agent.n_sensors / 2)
+                    ),
                     self.agent.pos[1]
-                    + sensor_data[i][0]
-                    * np.sin(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                    + sensor_data[i][1][0]
+                    * np.sin(
+                        self.agent.direction + i * np.pi / (self.agent.n_sensors / 2)
+                    ),
                 ),
                 width=2,
             )
 
             if show_text:
                 font = pygame.font.Font(None, 24)
-                text = font.render(str(int(sensor_data[i][0])), True, "black")
+                text = font.render(str(int(sensor_data[i][0][0])), True, "black")
                 window.blit(
                     text,
                     (
                         self.agent.pos[0]
                         + sensor_data[i][0]
-                        * np.cos(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                        * np.cos(
+                            self.agent.direction
+                            + i * np.pi / (self.agent.n_sensors / 2)
+                        ),
                         self.agent.pos[1]
                         + sensor_data[i][0]
-                        * np.sin(self.agent.direction + i * np.pi / (n_sensors / 2)),
+                        * np.sin(
+                            self.agent.direction
+                            + i * np.pi / (self.agent.n_sensors / 2)
+                        ),
                     ),
                 )
