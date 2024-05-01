@@ -31,12 +31,11 @@ agent = Agent(
     max_distance=200,
     color="green",
 )
-mean = np.array([agent.pos[0], agent.pos[1], 250])
-cov_matrix = np.diag([4, 5, 6])
+mean = np.array([agent.pos[0], agent.pos[1], 0])
+cov_matrix = np.diag([0.1, 0.1, 0.1])
 R = np.diag([0, 0, 0])
-Q = np.diag([40, 30, 66])
+Q = np.diag([0.01, 0.01, 0.01])
 env = PygameEnviroment(agent=agent)
-kfr = PygameKF(env, mean, cov_matrix, R, Q)
 # env.load_walls("walls.txt")
 
 land1 = Landmark(100, 100, 50, "a", "purple")
@@ -50,6 +49,8 @@ env.add_landmark(land2)
 env.add_landmark(land3)
 env.add_landmark(land4)
 env.add_landmark(land5)
+
+kfr = PygameKF(env, mean, cov_matrix, R, Q)
 
 
 def reset_agent():

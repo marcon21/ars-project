@@ -77,9 +77,9 @@ class Kalman_Filter:
         if meas:
 
             x, y, theta = meas
-            print("measurments", x, y, theta)
+            # ("measurments", x, y, theta)
             self.mean = self.mean + np.dot(K, (x, y, theta) - self.mean)
-            print("stima", self.mean)
+            # print("stima", self.mean)
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
 
         else:
