@@ -43,7 +43,7 @@ def reset_agent():
 
 
 rotation_size = pi / 180 * 2
-move_modifier = 1
+pause_state = False
 show_text = False
 start = None
 end = None
@@ -110,20 +110,19 @@ while running:
                 show_text = not show_text
             if event.key == K_SPACE:
                 # Toggle movement
-                if move_modifier:
-                    move_modifier = 0
-                else:
-                    move_modifier = 1
+                pause_state = not pause_state
 
     # Draw wall being added
     if start is not None:
         pygame.draw.line(window, "blue", start, (pygame.mouse.get_pos()), 5)
 
     # Change move speed based on last frame processing time
-    env.agent.move_speed = base_move_speed * dt * move_modifier * 2
+    env.agent.move_speed = base_move_speed * dt * 2
 
     # Take step in the phisic simulation and show the environment
-    env.move_agent()
+    if not pause_state:
+        env.move_agent()
+
     env.draw_sensors(window, n_sensors=20, max_distance=400, show_text=show_text)
     env.show(window)
 
