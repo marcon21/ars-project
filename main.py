@@ -6,11 +6,13 @@ from kalman_filter import Kalman_Filter, PygameKF
 from utils import intersection, distance_from_wall
 from math import pi
 import numpy as np
+from random import randint
+from random import random as rand
 
 
 # PYGAME SETUP
 pygame.init()
-GAME_RES = WIDTH, HEIGHT = 500, 500
+GAME_RES = WIDTH, HEIGHT = 1000, 1000
 FPS = 60
 GAME_TITLE = "ARS"
 window = pygame.display.set_mode(GAME_RES, HWACCEL | HWSURFACE | DOUBLEBUF)
@@ -23,16 +25,17 @@ pygame.display.set_caption(GAME_TITLE)
 base_move_speed = 50
 
 agent = Agent(
-    x=window.get_width() / 2,
-    y=window.get_height() / 2,
+    x=rand() * window.get_width(),
+    y=rand() * window.get_height(),
     size=30,
     move_speed=base_move_speed,
     n_sensors=10,
     max_distance=200,
     color="green",
 )
-mean = np.array([agent.pos[0], agent.pos[1], 0])
-cov_matrix = np.diag([0.1, 0.1, 0.1])
+# mean = np.array([agent.pos[0], agent.pos[1], agent.direction])
+mean = np.array([window.get_width() / 2, window.get_height() / 2, agent.direction])
+cov_matrix = np.diag([0.001, 0.001, 0.001])
 R = np.diag([0, 0, 0])
 Q = np.diag([0.01, 0.01, 0.01])
 env = PygameEnviroment(agent=agent)
@@ -43,7 +46,6 @@ land2 = Landmark(900, 900, 40, "b", "purple")
 land3 = Landmark(500, 500, 40, "c", "purple")
 land4 = Landmark(200, 250, 40, "c", "purple")
 land5 = Landmark(300, 200, 40, "c", "purple")
-land6 = Landmark(100, 300, 40, "c", "purple")
 env.add_landmark(land1)
 env.add_landmark(land2)
 env.add_landmark(land3)
@@ -51,11 +53,6 @@ env.add_landmark(land4)
 env.add_landmark(land5)
 
 kfr = PygameKF(env, mean, cov_matrix, R, Q)
-
-land1 = Landmark(100, 100, 30, "purple")
-land2 = Landmark(900, 900, 40, "purple")
-env.add_landmark(land1)
-env.add_landmark(land2)
 
 
 def reset_agent():
@@ -138,7 +135,7 @@ while running:
         pygame.draw.line(window, "blue", start, (pygame.mouse.get_pos()), 5)
 
     # Change move speed based on last frame processing time
-    env.agent.move_speed = base_move_speed * dt * 2
+    env.agent.move_speed = base_move_speed * dt * 2 * (not pause_state)
 
     # Take step in the phisic simulation and show the environment
 

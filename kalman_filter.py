@@ -6,7 +6,6 @@ from pygame.locals import *
 
 
 class Kalman_Filter:
-
     def __init__(self, env: Enviroment, initial_mean, initial_cov_matrix, R, Q):
         self.env = env
         self.agent = env.agent
@@ -75,13 +74,11 @@ class Kalman_Filter:
         self.prediction()
         meas = self.measurements()
         if meas:
-
             x, y, theta = meas
             # ("measurments", x, y, theta)
             self.mean = self.mean + np.dot(K, (x, y, theta) - self.mean)
             # print("stima", self.mean)
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
-
         else:
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
 
