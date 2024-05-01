@@ -1,7 +1,8 @@
 import pygame
 from pygame.locals import *
 from actors import Agent, Wall, Landmark
-from env import PygameEnviroment, Enviroment, Kalman_Filter
+from env import PygameEnviroment, Enviroment
+from kalman_filter import Kalman_Filter, PygameKF
 from utils import intersection, distance_from_wall
 from math import pi
 import numpy as np
@@ -9,7 +10,7 @@ import numpy as np
 
 # PYGAME SETUP
 pygame.init()
-GAME_RES = WIDTH, HEIGHT = 1000, 1000
+GAME_RES = WIDTH, HEIGHT = 500, 500
 FPS = 60
 GAME_TITLE = "ARS"
 window = pygame.display.set_mode(GAME_RES, HWACCEL | HWSURFACE | DOUBLEBUF)
@@ -28,19 +29,25 @@ agent = Agent(
     move_speed=base_move_speed,
     color="green",
 )
-mean = np.array([50, 50, 50])
+mean = np.array([agent.pos[0], agent.pos[1], 250])
 cov_matrix = np.diag([4, 5, 6])
-R = np.diag([4, 5, 6])
-Q = np.diag([4, 5, 6])
-kfr = Kalman_Filter(agent, mean, cov_matrix, R, Q)
-env = PygameEnviroment(agent=agent, kf=kfr)
+R = np.diag([0, 0, 0])
+Q = np.diag([40, 30, 66])
+env = PygameEnviroment(agent=agent)
+kfr = PygameKF(env, mean, cov_matrix, R, Q)
 # env.load_walls("walls.txt")
 
 land1 = Landmark(100, 100, 50, "a", "purple")
 land2 = Landmark(900, 900, 40, "b", "purple")
 land3 = Landmark(500, 500, 40, "c", "purple")
+land4 = Landmark(200, 250, 40, "c", "purple")
+land5 = Landmark(300, 200, 40, "c", "purple")
+land6 = Landmark(100, 300, 40, "c", "purple")
 env.add_landmark(land1)
 env.add_landmark(land2)
+env.add_landmark(land3)
+env.add_landmark(land4)
+env.add_landmark(land5)
 
 
 def reset_agent():
@@ -132,6 +139,9 @@ while running:
     env.move_agent()
     env.draw_sensors(window, n_sensors=20, max_distance=400, show_text=show_text)
     env.show(window)
+
+    kfr.correction()
+    kfr.show(window)
 
     # Update the display
     pygame.display.flip()

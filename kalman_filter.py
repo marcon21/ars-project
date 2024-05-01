@@ -1,27 +1,28 @@
 from env import Enviroment
 from actors import Agent
 import numpy as np
+import pygame
+from pygame.locals import *
 
 
 class Kalman_Filter:
 
-    def __init__(
-        self, agent: Agent, env: Enviroment, initial_mean, initial_cov_matrix, R, Q
-    ):
-
-        self.agent = agent
+    def __init__(self, env: Enviroment, initial_mean, initial_cov_matrix, R, Q):
+        self.env = env
+        self.agent = env.agent
         self.mean = initial_mean
         self.cov_matrix = initial_cov_matrix
-        self.sensor_data = env.get_sensor_data(agent.n_sensors)
         self.R = R
         self.Q = Q
 
     def measurements(self):
         mu = np.array([0, 0, 0])
+        sensor_data = self.env.get_sensor_data(self.agent.n_sensors)
 
-        for el in self.sensor_data:
+        for el in sensor_data:
+            print(el)
+            if el[0] is not None:
 
-            if el[0] != None:
                 samples = np.random.multivariate_normal(mu, self.Q, 1)[0]
 
                 distance, orientation, signature = el[1]
@@ -36,16 +37,16 @@ class Kalman_Filter:
                 return None
 
     def prediction(self):
-        mean = np.array([0, 0, 0])
-        samples = np.random.multivariate_normal(mean, self.R, 1)[0]
+        mu = np.array([0, 0, 0])
+        samples = np.random.multivariate_normal(mu, self.R, 1)[0]
         self.mean[0] = (
             self.mean[0]
-            + self.agent.direction_vector * self.agent.move_speed[0]
+            + (self.agent.direction_vector * self.agent.move_speed)[0]
             + samples[0]
         )
         self.mean[1] = (
             self.mean[1]
-            + self.agent.direction_vector * self.agent.move_speed[1]
+            + (self.agent.direction_vector * self.agent.move_speed)[1]
             + samples[1]
         )
         self.mean[2] = (
@@ -55,9 +56,8 @@ class Kalman_Filter:
         self.cov_matrix = self.cov_matrix + self.R
 
     def correction(self):
-        print("true position", self.agent.pos)
-        print("prediction", self.mean, self.cov_matrix)
-        print("measurments", x, y, theta)
+        # print("true position", self.agent.pos)
+        # print("prediction", self.mean, self.cov_matrix)
 
         K = np.dot(
             self.cov_matrix,
@@ -68,11 +68,22 @@ class Kalman_Filter:
                 ),
             ),
         )
+        self.prediction()
         meas = self.measurements()
         if meas:
-            x, y, theta = self.measurements()
+            x, y, theta = meas
+            # print("measurments", x, y, theta)
             self.mean = self.mean + np.dot(K, (x, y, theta) - self.mean)
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
-            print("correction", self.measurements)
+
         else:
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
+
+
+class PygameKF(Kalman_Filter):
+    def __init__(self, env: Enviroment, initial_mean, initial_cov_matrix, R, Q):
+        super().__init__(env, initial_mean, initial_cov_matrix, R, Q)
+
+    def show(self, window):
+        # print(self.mean[:2])
+        pygame.draw.circle(window, "red", self.mean[:2], 10)
