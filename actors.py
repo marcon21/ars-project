@@ -51,4 +51,3 @@ class Agent:
     def apply_vector(self, vector):
         self.pos += vector
         self.path.append(tuple(self.pos))
-        print(self.path)

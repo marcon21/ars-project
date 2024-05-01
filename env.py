@@ -139,11 +139,11 @@ class Enviroment:
         print("Walls loaded from", filename)
 
 
-class Kalman_Filter(Enviroment):
+class Kalman_Filter:
 
-    def __init__(self, agent: Agent, initial_mean, initial_cov_matrix, R, Q):
-
-        self.agent = agent
+    def __init__(self, env: Enviroment, initial_mean, initial_cov_matrix, R, Q):
+        self.env = env
+        self.agent = env.agent
         self.mean = initial_mean
         self.cov_matrix = initial_cov_matrix
         self.R = R
@@ -151,7 +151,7 @@ class Kalman_Filter(Enviroment):
 
     def measurements(self):
         mu = np.array([0, 0, 0])
-        sensor_data = self.get_sensor_data(self.agent.n_sensors)
+        sensor_data = self.env.get_sensor_data(self.agent.n_sensors)
         for el in sensor_data:
 
             if el[0] != None:
@@ -169,8 +169,8 @@ class Kalman_Filter(Enviroment):
                 return None
 
     def prediction(self):
-        mean = np.array([0, 0, 0])
-        samples = np.random.multivariate_normal(mean, self.R, 1)[0]
+        mu = np.array([0, 0, 0])
+        samples = np.random.multivariate_normal(mu, self.R, 1)[0]
         self.mean[0] = (
             self.mean[0]
             + self.agent.direction_vector * self.agent.move_speed[0]
@@ -204,7 +204,7 @@ class Kalman_Filter(Enviroment):
         self.prediction()
         meas = self.measurements()
         if meas:
-            x, y, theta = self.measurements()
+            x, y, theta = meas
             self.mean = self.mean + np.dot(K, (x, y, theta) - self.mean)
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
             print("correction", self.measurements)
@@ -237,6 +237,13 @@ class PygameEnviroment(Enviroment):
 
         # Draw agent
         pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
+        for point in self.agent.path:
+            index = self.agent.path.index(point)
+            final_index = len(self.agent.path) - 1
+            if index > 0 and index < final_index:
+                pygame.draw.lines(
+                    window, "black", False, [point, self.agent.path[index + 1]], 2
+                )
 
         # Draw agent direction
         pygame.draw.line(
