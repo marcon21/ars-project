@@ -13,13 +13,14 @@ class Kalman_Filter:
         self.cov_matrix = initial_cov_matrix
         self.R = R
         self.Q = Q
+        self.trajectory = [initial_mean[:2]]
 
     def measurements(self):
         mu = np.array([0, 0, 0])
         sensor_data = self.env.get_sensor_data(
             n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance
         )
-
+        l_detections = []
         for i in range(len(sensor_data)):
 
             interception = sensor_data[i][0]
@@ -27,7 +28,6 @@ class Kalman_Filter:
             if interception is not None:
 
                 samples = np.random.multivariate_normal(mu, self.Q, 1)[0]
-
                 distance, orientation, signature = sensor_data[i][1]
                 sensor_start = sensor_data[i][2][0]
                 sensor_end = sensor_data[i][2][1]
@@ -36,8 +36,9 @@ class Kalman_Filter:
                 sensor_vector = np.array(sensor_end) - np.array(sensor_start)
                 angle = np.arctan2(sensor_vector[1], sensor_vector[0])
                 theta = angle + orientation + samples[2]
+                l_detections.append((x, y, theta))
 
-                return x, y, theta
+        return l_detections
 
     def prediction(self):
         mu = np.array([0, 0, 0])
@@ -74,13 +75,41 @@ class Kalman_Filter:
         self.prediction()
         meas = self.measurements()
         if meas:
-            x, y, theta = meas
-            # ("measurments", x, y, theta)
-            self.mean = self.mean + np.dot(K, (x, y, theta) - self.mean)
-            # print("stima", self.mean)
-            self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
+            if len(meas) == 1:
+                x = meas[0][0]
+                y = meas[0][1]
+                theta = meas[0][2]
+                # ("measurments", x, y, theta)
+                self.mean = self.mean + np.dot(K, (x, y, theta) - self.mean)
+                # print("stima", self.mean)
+                self.cov_matrix = np.dot(
+                    np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix
+                )
+
+            else:
+                sum_x = 0
+                sum_y = 0
+                sum_theta = 0
+
+                for tupla in meas:
+                    sum_x += tupla[0]
+                    sum_y += tupla[1]
+                    sum_theta += tupla[2]
+
+                mean_x = sum_x / len(meas)
+                mean_y = sum_y / len(meas)
+                mean_theta = sum_theta / len(meas)
+                self.mean = self.mean + np.dot(
+                    K, (mean_x, mean_y, mean_theta) - self.mean
+                )
+                self.cov_matrix = np.dot(
+                    np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix
+                )
+
         else:
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
+
+        self.trajectory.append(self.mean[:2])
 
 
 class PygameKF(Kalman_Filter):
@@ -89,4 +118,6 @@ class PygameKF(Kalman_Filter):
 
     def show(self, window):
         # print(self.mean[:2])
+        # print(self.trajectory)
+        # pygame.draw.lines(window, "red", False, self.trajectory, 2)
         pygame.draw.circle(window, "red", self.mean[:2], 10)
