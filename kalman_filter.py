@@ -1,4 +1,4 @@
-from env import Enviroment
+from env import Enviroment, PygameEnviroment
 from actors import Agent
 import numpy as np
 import pygame
@@ -14,6 +14,8 @@ class Kalman_Filter:
         self.R = R
         self.Q = Q
         self.trajectory = [initial_mean[:2]]
+        self.mean_prediction = initial_mean
+        self.cov_prediction =initial_cov_matrix
 
     def measurements(self):
         mu = np.array([0, 0, 0])
@@ -52,6 +54,7 @@ class Kalman_Filter:
         self.mean[2] = np.arctan2(self.agent.direction_vector[1], self.agent.direction_vector[0]) + samples[2]
 
         self.cov_matrix += self.R
+        self.mean_prediction,self.cov_prediction = self.mean.copy(),self.cov_matrix.copy()
 
     def correction(self):
         # print("true position", self.agent.pos)
@@ -110,9 +113,21 @@ class PygameKF(Kalman_Filter):
     def show(self, window):
         # print(self.mean[:2])
         # print(self.trajectory)
-        pygame.draw.ellipse(window,"grey", (self.mean[0],self.mean[1],30,30))
-        pygame.draw.lines(window, "red", False, self.trajectory, 2)
         
+        def draw_semi_transparent_ellipse(screen, alpha, pose, horizontal_radius, vertical_radius):
+            surface = pygame.Surface((700, 700), pygame.SRCALPHA)
+            pygame.draw.ellipse(surface, (100,100,100,alpha), (0, 0, horizontal_radius * 2, vertical_radius * 2))
+            rotated_surface = pygame.transform.rotate(surface, pose[2])
+            screen.blit(rotated_surface, (pose[0] - horizontal_radius, pose[1] - vertical_radius))
+        
+        draw_semi_transparent_ellipse(window, 200, self.mean, self.cov_matrix[0][0], self.cov_matrix[1][1])
+        draw_semi_transparent_ellipse(window, 50, self.mean_prediction, self.cov_prediction[0][0], self.cov_prediction[1][1])
+        
+
+
+        pygame.draw.lines(window, "red", False, self.trajectory, 2)
+    
+    
         """
         trajectory_list = [
             tuple(self.trajectory[i]) for i in range(0, len(self.trajectory), 5)
