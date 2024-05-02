@@ -143,6 +143,13 @@ class Enviroment:
                 )
 
         print("Walls loaded from", filename)
+            
+    def load_landmarks(self, filename, size, color):
+        with open(filename, "r") as f:
+            for i, line in enumerate(f, start=1):
+                x, y = map(int, line.split())
+                landmark = Landmark(x, y, size, i, color)
+                self.add_landmark(landmark)
 
 
 class PygameEnviroment(Enviroment):
