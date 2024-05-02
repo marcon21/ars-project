@@ -120,6 +120,7 @@ class Enviroment:
             sensor_data.append(
                 (int_point, (d, orientation, signature), (sensor.start, sensor.end))
             )
+        # print(sensor_data)
 
         return sensor_data
 
@@ -183,6 +184,7 @@ class PygameEnviroment(Enviroment):
         # Draw Estimated Path based on the agent direction
         path = []
         temp_agent = deepcopy(self.agent)
+        """
         for i in range(500):
             temp_agent.apply_vector(temp_agent.direction_vector * temp_agent.move_speed)
             temp_agent.rotate(temp_agent.turn_direction / 10)
@@ -190,6 +192,7 @@ class PygameEnviroment(Enviroment):
             if i % 3 == 0:
                 pygame.draw.circle(window, "blue", next_pos, 1)
             path.append(next_pos)
+        """
         # pygame.draw.lines(window, "blue", False, path, width=2)
 
         # Draw landmarks
@@ -203,28 +206,30 @@ class PygameEnviroment(Enviroment):
 
         for i in range(self.agent.n_sensors):
             c = "green"
-            if sensor_data[i][0] is not None:
+            if sensor_data[i][0] is not None and sensor_data[i][1][2] is not None:
                 c = "red"
                 pygame.draw.circle(window, "red", sensor_data[i][0], 5)
 
-            pygame.draw.line(
-                window,
-                c,
-                self.agent.pos,
-                (
-                    self.agent.pos[0]
-                    + sensor_data[i][1][0]
-                    * np.cos(
-                        self.agent.direction + i * np.pi / (self.agent.n_sensors / 2)
+                pygame.draw.line(
+                    window,
+                    c,
+                    self.agent.pos,
+                    (
+                        self.agent.pos[0]
+                        + sensor_data[i][1][0]
+                        * np.cos(
+                            self.agent.direction
+                            + i * np.pi / (self.agent.n_sensors / 2)
+                        ),
+                        self.agent.pos[1]
+                        + sensor_data[i][1][0]
+                        * np.sin(
+                            self.agent.direction
+                            + i * np.pi / (self.agent.n_sensors / 2)
+                        ),
                     ),
-                    self.agent.pos[1]
-                    + sensor_data[i][1][0]
-                    * np.sin(
-                        self.agent.direction + i * np.pi / (self.agent.n_sensors / 2)
-                    ),
-                ),
-                width=2,
-            )
+                    width=2,
+                )
 
             if show_text:
                 font = pygame.font.Font(None, 24)
