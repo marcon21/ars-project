@@ -3,20 +3,20 @@ from math import pi
 
 
 GAME_RES = WIDTH, HEIGHT = 700,700
-FPS = 60
+FPS = 10
 GAME_TITLE = "ARS"
 
 SCREEN_COLOR = "white"
-ROTATION_SIZE = pi / 180 * 90
-BASE_MOVE_SPEED = 50
+ROTATION_SIZE = pi / 180 * 10
+BASE_MOVE_SPEED = 20
 AGENT_SIZE = 30
 SENSORS = 20
 RANGE = 100
 AGENT_COLOR = "green"
 MEAN = np.array([3, 3, 3])
-COV_MATRIX = np.diag([20, 20, 20])
-R = np.diag([10, 10, 10])
-Q = np.diag([1, 1, 1])
+COV_MATRIX = np.diag([10, 50, 10])
+R = np.diag([100, 100, 100])
+Q = np.diag([10, 10, 10])
 LANDMARKS = 10
 LANDMARK_COLOR = "purple"
 LANDMARK_SIZE = 20
