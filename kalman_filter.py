@@ -18,49 +18,40 @@ class Kalman_Filter:
     def measurements(self):
         mu = np.array([0, 0, 0])
         sensor_data = self.env.get_sensor_data(
-            n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance
-        )
+            n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance)
         l_detections = []
-        for i in range(len(sensor_data)):
+        for perception in sensor_data:
 
-            interception = sensor_data[i][0]
-            signature = sensor_data[i][1][2]
+            interception = perception[0]
+            signature = perception[1][2]
 
             if interception is not None and signature is not None:
 
                 # print(sensor_data[i])
 
                 samples = np.random.multivariate_normal(mu, self.Q, 1)[0]
-                distance, orientation, signature = sensor_data[i][1]
-                sensor_start = sensor_data[i][2][0]
-                sensor_end = sensor_data[i][2][1]
+                distance, orientation, signature = perception[1]
+                sensor_start = perception[2][0]
+                sensor_end = perception[2][1]
                 x = self.agent.pos[0] + samples[0]
                 y = self.agent.pos[1] + samples[1]
                 sensor_vector = np.array(sensor_end) - np.array(sensor_start)
                 angle = np.arctan2(sensor_vector[1], sensor_vector[0])
                 theta = angle + orientation + samples[2]
+                
                 l_detections.append((x, y, theta))
 
         return l_detections
-
+    
     def prediction(self):
-        mu = np.array([0, 0, 0])
-        samples = np.random.multivariate_normal(mu, self.R, 1)[0]
-        self.mean[0] = (
-            self.mean[0]
-            + (self.agent.direction_vector * self.agent.move_speed)[0]
-            + samples[0]
-        )
-        self.mean[1] = (
-            self.mean[1]
-            + (self.agent.direction_vector * self.agent.move_speed)[1]
-            + samples[1]
-        )
-        self.mean[2] = (
-            np.arctan2(self.agent.direction_vector[1], self.agent.direction_vector[0])
-            + samples[2]
-        )
-        self.cov_matrix = self.cov_matrix + self.R
+        samples = np.random.multivariate_normal(np.zeros(3), self.R, 1)[0]
+        movement = self.agent.direction_vector * self.agent.move_speed
+
+        self.mean[0] += movement[0] + samples[0]
+        self.mean[1] += movement[1] + samples[1]
+        self.mean[2] = np.arctan2(self.agent.direction_vector[1], self.agent.direction_vector[0]) + samples[2]
+
+        self.cov_matrix += self.R
 
     def correction(self):
         # print("true position", self.agent.pos)
