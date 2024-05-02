@@ -58,6 +58,12 @@ def draw_legend():
 while True:
     window.fill(SCREEN_COLOR)
     
+    while pause_state:
+        for event in pygame.event.get():
+            if event.type==KEYDOWN:
+                if event.key==K_SPACE:
+                    pause_state = False
+    
     for event in pygame.event.get():
         if event.type == QUIT: quit()
         if event.type == KEYDOWN:
@@ -73,7 +79,11 @@ while True:
             if event.key == K_r: reset_agent()
             if event.key == K_t: show_text = not show_text
             if event.key == K_s: agent.n_sensors += 2
-            if event.key == K_SPACE: pause_state = not pause_state
+            if event.key == K_SPACE: pause_state = True
+            
+
+                        
+                        
     if start: pygame.draw.line(window, "blue", start, pygame.mouse.get_pos(), 5)
     env.agent.move_speed = BASE_MOVE_SPEED * dt * 0.5 * (not pause_state)
     if not pause_state: env.move_agent()
