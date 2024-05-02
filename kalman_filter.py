@@ -110,7 +110,9 @@ class PygameKF(Kalman_Filter):
     def show(self, window):
         # print(self.mean[:2])
         # print(self.trajectory)
+        pygame.draw.ellipse(window,"grey", (self.mean[0],self.mean[1],30,30))
         pygame.draw.lines(window, "red", False, self.trajectory, 2)
+        
         """
         trajectory_list = [
             tuple(self.trajectory[i]) for i in range(0, len(self.trajectory), 5)
