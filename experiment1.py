@@ -7,17 +7,17 @@ FPS = 10
 GAME_TITLE, SCREEN_COLOR = "ARS", "white"
 
 ROTATION_SIZE = pi / 180 * 30
-BASE_MOVE_SPEED = 0
+BASE_MOVE_SPEED = 10
 AGENT_SIZE = 20
 SENSORS = 10
 RANGE = 100
-AGENT_COLOR = "green"
+AGENT_COLOR = "orange"
 MEAN = np.array([3, 3, 3])
-COV_MATRIX = np.diag([10, 100, 1])
-R = np.diag([100, 20, 1])
-Q = np.diag([10, 100, 100])
+COV_MATRIX = np.diag([1, 1, 1])
+R = np.diag([1, 1, 1])
+Q = np.diag([1, 1, 1])
 
-LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 10, "purple", 20
+LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 10, "black", 20
 
 WALLS_TXT, LANDMARK_TXT = "walls.txt", "landmarks_experiment.txt"
 

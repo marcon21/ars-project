@@ -4,11 +4,11 @@ from actors import Agent, Wall, Landmark
 from env import PygameEnviroment, Enviroment
 from kalman_filter import Kalman_Filter, PygameKF
 from utils import intersection, distance_from_wall
-from math import pi
+from math import pi, degrees,atan2
 import numpy as np
 from random import randint
 from random import random as rand
-from map import *
+from experiment1 import *
 
 def reset_agent():
     agent.pos = (window.get_width() / 2, window.get_height() / 2)
@@ -22,12 +22,13 @@ dt = 0
 pygame.display.set_caption(GAME_TITLE)
 
 # Initialize agent
-agent = Agent(x=rand() * WIDTH, y=rand() * HEIGHT, size=AGENT_SIZE,
+agent = Agent(x=300.0, y=300.0, size=AGENT_SIZE,
               move_speed=BASE_MOVE_SPEED, n_sensors=SENSORS, max_distance=RANGE, color=AGENT_COLOR)
 
 # Initialize environment and load landmarks
 env = PygameEnviroment(agent=agent)
 env.load_landmarks(LANDMARK_TXT, LANDMARK_SIZE, LANDMARK_COLOR)
+
 
 # Initialize Kalman Filter
 kfr = PygameKF(env, MEAN, COV_MATRIX, R, Q)
@@ -40,12 +41,16 @@ print(INSTRUCTIONS)
 
 def draw_legend():
     font = pygame.font.Font(None, 24)
-    legend_text = [f"Press v to increase, c to decrease FPS = {FPS}",
-                f"Position = [{round(agent.pos[0])},{round(agent.pos[1])}]",
-                f"Estimated position [{round(kfr.mean[0])},{round(kfr.mean[1])}]",
-                f"Actual difference [{round(agent.pos[0])-round(kfr.mean[0])},{round(agent.pos[1])-round(kfr.mean[1])}]",
-                f"Sensors = {agent.n_sensors}"
-                ]
+    x, y = agent.pos
+    theta = atan2(agent.direction_vector[1], agent.direction_vector[0])
+
+    legend_text = [
+    f"Press v to increase, c to decrease FPS = {FPS}",
+    f"Position = [ x = {round(x)}, y = {round(y)}, theta = {round(degrees(theta))}]",
+    f"Estimated pose = [ x = {round(kfr.mean[0])}, y = {round(kfr.mean[1])}, theta = {round(degrees(kfr.mean[2]))}]",
+    f"Actual difference = [ x = {round(x - kfr.mean[0])}, y = {round(y - kfr.mean[1])}, theta = {round(degrees(theta - kfr.mean[2]))}]",
+    f"Sensors = {agent.n_sensors}"
+]
     y = 50 
     for text in legend_text:
         text_surface = font.render(text, True, "black")

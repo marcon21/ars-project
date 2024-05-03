@@ -205,6 +205,9 @@ class PygameEnviroment(Enviroment):
         # Draw landmarks
         for landmark in self.landmarks:
             pygame.draw.circle(window, landmark.color, landmark.pos, landmark.size)
+            #draw landmark positions
+            window.blit(pygame.font.Font(None, 15).render(f"({landmark.pos[0]}, {landmark.pos[1]}), {landmark.signature}", True, "green"), (landmark.pos[0], landmark.pos[1]))
+
 
     def draw_sensors(self, window, show_text=False):
         sensor_data = self.get_sensor_data(
