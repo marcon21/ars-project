@@ -2,10 +2,11 @@ import pygame
 from pygame.locals import *
 from typing import List
 from actors import Agent, Wall, Landmark
-from utils import intersection, distance_from_wall, intersection_line_circle
+from utils import intersection, distance_from_wall, intersection_line_circle, angle_from_vector
 import numpy as np
 from copy import deepcopy
 import math
+from math import cos,sin,degrees
 
 
 class Enviroment:
@@ -172,6 +173,13 @@ class PygameEnviroment(Enviroment):
 
         # Draw agent
         pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
+        
+        #Draw agent orientation
+        pygame.draw.line(window, "orange", (self.agent.pos[0], self.agent.pos[1]),
+                 (self.agent.pos[0] + 100 * math.cos(angle_from_vector(self.agent.direction_vector)),
+                  self.agent.pos[1] + 100 * math.sin(angle_from_vector(self.agent.direction_vector))), 2)
+        
+        
 
         pygame.draw.lines(window, "black", False, self.agent.path, 2)
         self.agent.path = self.agent.path[-1000:]

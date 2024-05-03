@@ -121,16 +121,17 @@ class PygameKF(Kalman_Filter):
             rotated_surface = pygame.transform.rotate(surface, pose[2])
             screen.blit(rotated_surface, (pose[0] - horizontal_radius, pose[1] - vertical_radius))
         
+        
         #after prediction
         draw_semi_transparent_ellipse(window, 200, self.mean, self.cov_matrix[0][0], self.cov_matrix[1][1])
         pygame.draw.line(window, "green", (self.mean[0], self.mean[1]),
                  (self.mean[0] + 100 *cos(self.mean[2]),
-                  self.mean[1] - 100 * sin(self.mean[2])), 2)
+                  self.mean[1] + 100 * sin(self.mean[2])), 2)
         
         draw_semi_transparent_ellipse(window, 50, self.mean_prediction, self.cov_prediction[0][0], self.cov_prediction[1][1])
         pygame.draw.line(window, "grey", (self.mean_prediction[0], self.mean_prediction[1]),
                  (self.mean_prediction[0] + 100 *cos(self.mean_prediction[2]),
-                  self.mean_prediction[1] - 100 * sin(self.mean_prediction[2])), 2)
+                  self.mean_prediction[1] + 100 * sin(self.mean_prediction[2])), 2)
 
         
 
