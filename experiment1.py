@@ -2,27 +2,27 @@ import numpy as np
 from math import pi
 
 
-GAME_RES = WIDTH, HEIGHT = 700,700
-FPS = 10
-GAME_TITLE, SCREEN_COLOR = "ARS", "white"
 
-ROTATION_SIZE = pi / 180 * 30
+#agent specifics
+X_START,Y_START = 300.,300.
+ROTATION_SIZE = pi / 180 * 2
 BASE_MOVE_SPEED = 10
-AGENT_SIZE = 20
-SENSORS = 10
-RANGE = 100
-AGENT_COLOR = "orange"
+AGENT_SIZE, AGENT_COLOR = 20, "orange"
+SENSORS,RANGE = 10, 100
 MEAN = np.array([3, 3, 3])
-COV_MATRIX = np.diag([1, 1, 1])
-R = np.diag([1, 1, 1])
-Q = np.diag([1, 1, 1])
+COV_MATRIX = np.diag([100, 100, 1])
+R = np.diag([50, 50, 50])
+Q = np.diag([50, 50, 120])
 
+#landmars and walls
 LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 10, "black", 20
-
 WALLS_TXT, LANDMARK_TXT = "walls.txt", "landmarks_experiment.txt"
 
 
-
+#environment specifics
+GAME_RES = WIDTH, HEIGHT = 1000,1000
+FPS = 10
+GAME_TITLE, SCREEN_COLOR = "ARS", "white"
 INSTRUCTIONS = """
 --------------------
 Press 'q' or 'ARROW L' to rotate left by {} degrees \n
@@ -35,3 +35,4 @@ Press 'r' to reset agent \n
 Press 't' to toggle text visibility \n
 Press 'SPACE' to toggle movement \n
 """.format(ROTATION_SIZE * 180/pi, ROTATION_SIZE * 180/pi)
+

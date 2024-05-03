@@ -22,7 +22,7 @@ dt = 0
 pygame.display.set_caption(GAME_TITLE)
 
 # Initialize agent
-agent = Agent(x=300.0, y=300.0, size=AGENT_SIZE,
+agent = Agent(x=X_START, y=Y_START, size=AGENT_SIZE,
               move_speed=BASE_MOVE_SPEED, n_sensors=SENSORS, max_distance=RANGE, color=AGENT_COLOR)
 
 # Initialize environment and load landmarks
@@ -45,11 +45,11 @@ def draw_legend():
     theta = atan2(agent.direction_vector[1], agent.direction_vector[0])
 
     legend_text = [
-    f"Press v to increase, c to decrease FPS = {FPS}",
+    f" FPS = {FPS}  Press v to increase, c to decrease",
     f"Position = [ x = {round(x)}, y = {round(y)}, theta = {round(degrees(theta))}]",
     f"Estimated pose = [ x = {round(kfr.mean[0])}, y = {round(kfr.mean[1])}, theta = {round(degrees(kfr.mean[2]))}]",
     f"Actual difference = [ x = {round(x - kfr.mean[0])}, y = {round(y - kfr.mean[1])}, theta = {round(degrees(theta - kfr.mean[2]))}]",
-    f"Sensors = {agent.n_sensors}"
+    f" Sensors = {agent.n_sensors}  Press s to add 2"
 ]
     y = 50 
     for text in legend_text:
@@ -57,7 +57,7 @@ def draw_legend():
         text_rect = text_surface.get_rect()
         text_rect.topleft = (50, y)
         window.blit(text_surface, text_rect)
-        y += 30  # Incrementa la posizione verticale per il prossimo elemento di legenda
+        y += 30  
 
 
 while True:
