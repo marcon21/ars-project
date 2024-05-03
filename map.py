@@ -1,29 +1,29 @@
 import numpy as np
 from math import pi
+from scipy.stats import uniform
 
 
-GAME_RES = WIDTH, HEIGHT = 700,700
-FPS = 10
-GAME_TITLE = "ARS"
 
-SCREEN_COLOR = "white"
-ROTATION_SIZE = pi / 180 * 10
-BASE_MOVE_SPEED = 10
-AGENT_SIZE = 20
-SENSORS = 10
-RANGE = 100
-AGENT_COLOR = "green"
+#agent specifics
+X_START,Y_START = 300.,300.
+ROTATION_SIZE = pi / 180 * 2
+BASE_MOVE_SPEED = 10 
+AGENT_SIZE, AGENT_COLOR = 20, "orange"
+SENSORS,RANGE = 10, 100
 MEAN = np.array([3, 3, 3])
-COV_MATRIX = np.diag([10, 100, 1])
-R = np.diag([100, 20, 1])
-Q = np.diag([10, 100, 100])
-LANDMARKS = 10
-LANDMARK_COLOR = "purple"
-LANDMARK_SIZE = 20
-WALLS_TXT = "walls.txt"
-LANDMARK_TXT = "landmarks.txt"
+COV_MATRIX = np.diag([1, 1, 1])
+R = np.diag([10, 20, 1])
+Q = np.diag([20, 10, 1])
+
+#landmars and walls
+LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 2, "black", 20
+WALLS_TXT, LANDMARK_TXT = "walls.txt", "landmarks_experiment.txt"
 
 
+#environment specifics
+GAME_RES = WIDTH, HEIGHT = 1000,1000
+FPS = 10
+GAME_TITLE, SCREEN_COLOR = "ARS", "white"
 INSTRUCTIONS = """
 --------------------
 Press 'q' or 'ARROW L' to rotate left by {} degrees \n

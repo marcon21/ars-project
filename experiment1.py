@@ -1,28 +1,29 @@
 import numpy as np
 from math import pi
+from scipy.stats import uniform
 
 
 
 #agent specifics
 X_START,Y_START = 300.,300.
 ROTATION_SIZE = pi / 180 * 2
-BASE_MOVE_SPEED = 10
+BASE_MOVE_SPEED = 10 
 AGENT_SIZE, AGENT_COLOR = 20, "orange"
 SENSORS,RANGE = 10, 100
 MEAN = np.array([3, 3, 3])
-COV_MATRIX = np.diag([100, 100, 1])
-R = np.diag([50, 50, 50])
-Q = np.diag([50, 50, 120])
+COV_MATRIX = np.diag([1, 1, 0])
+R = np.diag([10, 20, 1])
+Q = np.diag([20, 10, 1])
 
 #landmars and walls
-LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 10, "black", 20
+LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 2, "black", 20
 WALLS_TXT, LANDMARK_TXT = "walls.txt", "landmarks_experiment.txt"
 
 
 #environment specifics
 GAME_RES = WIDTH, HEIGHT = 1000,1000
-FPS = 10
-GAME_TITLE, SCREEN_COLOR = "ARS", "white"
+FPS = 60
+GAME_TITLE, SCREEN_COLOR = "EXPERIMENT 1: ROBOT CAN SEE 3 LANDMARKS", "white"
 INSTRUCTIONS = """
 --------------------
 Press 'q' or 'ARROW L' to rotate left by {} degrees \n

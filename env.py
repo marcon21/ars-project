@@ -225,8 +225,8 @@ class PygameEnviroment(Enviroment):
         for i in range(self.agent.n_sensors):
             c = "green"
             if sensor_data[i][0] is not None and sensor_data[i][1][2] is not None:
-                c = "red"
-                pygame.draw.circle(window, "red", sensor_data[i][0], 5)
+                c = "green"
+                pygame.draw.circle(window, c, sensor_data[i][0], 5)
 
                 pygame.draw.line(
                     window,
