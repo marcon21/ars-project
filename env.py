@@ -72,51 +72,36 @@ class Enviroment:
 
     def get_sensor_data(self, n_sensors=8, max_distance=200):
         sensor_data = []
+        position = self.agent.pos
+        x,y = position
+        
+        #iterate sensors 
         for i in range(n_sensors):
             current_angle = self.agent.direction + i * np.pi / (n_sensors / 2)
-            sensor = Wall(
-                self.agent.pos[0],
-                self.agent.pos[1],
-                self.agent.pos[0] + max_distance * np.cos(current_angle),
-                self.agent.pos[1] + max_distance * np.sin(current_angle),
-            )
+            sensor = Wall(x, y, x + max_distance * np.cos(current_angle), y + max_distance * np.sin(current_angle),)
 
             d = max_distance
-            int_point = None
-            orientation = None
-            signature = None
-
+            int_point, orientation, signature = None, None, None
+            
+            #find measurements from walls
             for wall in self.walls:
                 intersection_point = intersection(sensor, wall)
                 if intersection_point:
-                    distance = np.linalg.norm(
-                        np.array(intersection_point) - np.array(self.agent.pos)
-                    )
+                    distance = np.linalg.norm(intersection_point - position)
                     if distance < d:
-                        d = distance
-                        int_point = intersection_point
-                        orientation = current_angle
+                        d, int_point, orientation = distance, intersection_point, current_angle
+                        
+            #find measurements from landmarks            
             for l in self.landmarks:
                 intersection_point = intersection_line_circle(sensor, l)
 
                 if intersection_point:
                     for i in intersection_point:
                         # is intersection point on the sensor?
-                        if (
-                            np.dot(
-                                np.array(i) - np.array(self.agent.pos),
-                                np.array(sensor.end) - np.array(self.agent.pos),
-                            )
-                            > 0
-                        ):
-                            distance = np.linalg.norm(
-                                np.array(i) - np.array(self.agent.pos)
-                            )
+                        if ( np.dot(i-position,sensor.end - position) > 0):
+                            distance = np.linalg.norm(i-position)
                             if distance < d:
-                                d = distance
-                                int_point = i
-                                orientation = current_angle
-                                signature = l.signature
+                                d, int_point, orientation,signature = distance, i, current_angle, l.signature
 
             sensor_data.append(
                 (int_point, (d, orientation, signature), (sensor.start, sensor.end))

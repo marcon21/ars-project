@@ -4,6 +4,8 @@ import numpy as np
 import pygame
 from math import sin,cos,radians
 from pygame.locals import *
+from  utils import angle_from_vector
+from numpy.random import multivariate_normal
 
 
 class Kalman_Filter:
@@ -18,6 +20,7 @@ class Kalman_Filter:
         self.mean_prediction = initial_mean
         self.cov_prediction =initial_cov_matrix
 
+    #sensor data: [(int_point, (d, orientation, signature), (sensor.start, sensor.end))]
     def measurements(self):
         mu = np.array([0, 0, 0])
         sensor_data = self.env.get_sensor_data(
@@ -32,30 +35,38 @@ class Kalman_Filter:
 
                 # print(sensor_data[i])
 
-                samples = np.random.multivariate_normal(mu, self.Q, 1)[0]
+                samples = multivariate_normal(mu, self.Q, 1)[0]
                 distance, orientation, signature = perception[1]
-                sensor_start = perception[2][0]
-                sensor_end = perception[2][1]
+                sensor_start, sensor_end = perception[2]
+                
                 x = self.agent.pos[0] + samples[0]
                 y = self.agent.pos[1] + samples[1]
+                
                 sensor_vector = np.array(sensor_end) - np.array(sensor_start)
-                angle = np.arctan2(sensor_vector[1], sensor_vector[0])
-                theta = angle + orientation + samples[2]
+                theta = angle_from_vector(sensor_vector) + orientation + samples[2]
                 
                 l_detections.append((x, y, theta))
 
         return l_detections
     
     def prediction(self):
-        samples = np.random.multivariate_normal(np.zeros(3), self.R, 1)[0]
-        movement = self.agent.direction_vector * self.agent.move_speed
-
-        self.mean[0] += movement[0] + samples[0]
-        self.mean[1] += movement[1] + samples[1]
-        self.mean[2] = np.arctan2(self.agent.direction_vector[1], self.agent.direction_vector[0]) + samples[2]
-
-        self.cov_matrix += self.R
-        self.mean_prediction,self.cov_prediction = self.mean.copy(),self.cov_matrix.copy()
+        mu = np.array([0, 0, 0])
+        samples = multivariate_normal(mu, self.R, 1)[0]
+        self.mean[0] = (
+            self.mean[0]
+            + (self.agent.direction_vector * self.agent.move_speed)[0]
+            + samples[0]
+        )
+        self.mean[1] = (
+            self.mean[1]
+            + (self.agent.direction_vector * self.agent.move_speed)[1]
+            + samples[1]
+        )
+        self.mean[2] = (
+            angle_from_vector(self.agent.direction_vector) + samples[2]
+        )
+        self.cov_matrix = self.cov_matrix + self.R
+        self.mean_prediction, self.cov_prediction = self.mean, self.cov_matrix
 
     def correction(self):
         # print("true position", self.agent.pos)

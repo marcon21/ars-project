@@ -11,9 +11,9 @@ BASE_MOVE_SPEED = 10
 AGENT_SIZE, AGENT_COLOR = 20, "orange"
 SENSORS,RANGE = 10, 100
 MEAN = np.array([3, 3, 3])
-COV_MATRIX = np.diag([1, 1, 1])
-R = np.diag([10, 20, 1])
-Q = np.diag([20, 10, 1])
+COV_MATRIX = np.diag([1, 1, 0,000001])
+R = np.diag([10, 20, 0,000001])
+Q = np.diag([20, 10, 0,00001])
 
 #landmars and walls
 LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 2, "black", 20
