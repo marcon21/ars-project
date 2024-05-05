@@ -30,29 +30,34 @@ slider = Slider(window, WIDTH- 230, 50, 200, 10, min=0, max=99, step=1)
 output = TextBox(window, WIDTH- 230, 20, 30, 30, fontSize=17)
 output.disable() 
 
-slider_Rsx = Slider(window, WIDTH- 230, 50+ 100, 200, 10, min=0, max=100, step=0.05)
-output1 = TextBox(window, WIDTH- 230, 20+100, 30, 30, fontSize=17)
+slider_Rsx = Slider(window, WIDTH- 230, 50+ 80, 200, 10, min=0, max=100, step=0.05)
+output1 = TextBox(window, WIDTH- 230, 20+80, 30, 30, fontSize=17)
 output1.disable() 
 
-slider_Rsy = Slider(window, WIDTH- 230, 50+ 200, 200, 10, min=0, max=100, step=0.05)
-output2 = TextBox(window, WIDTH- 230, 20+200, 30, 30, fontSize=17)
+slider_Rsy = Slider(window, WIDTH- 230, 50+ 160, 200, 10, min=0, max=100, step=0.05)
+output2 = TextBox(window, WIDTH- 230, 20+160, 30, 30, fontSize=17)
 output2.disable() 
 
-slider_Rsth = Slider(window, WIDTH- 230, 50+ 300, 200, 10, min=0, max=10, step=0.05)
-output3 = TextBox(window, WIDTH- 230, 20+300, 30, 30, fontSize=17)
+slider_Rsth = Slider(window, WIDTH- 230, 50+ 240, 200, 10, min=0, max=10, step=0.05)
+output3 = TextBox(window, WIDTH- 230, 20+240, 30, 30, fontSize=17)
 output3.disable() 
 
-slider_Qsx = Slider(window, WIDTH- 230, 50+ 400, 200, 10, min=0.05, max=100, step=0.05)
-output4 = TextBox(window, WIDTH- 230, 20+400, 30, 30, fontSize=17)
+slider_Qsx = Slider(window, WIDTH- 230, 50+ 320, 200, 10, min=0.05, max=100, step=0.05)
+output4 = TextBox(window, WIDTH- 230, 20+320, 30, 30, fontSize=17)
 output4.disable()
 
-slider_Qsy = Slider(window, WIDTH- 230, 50+ 500, 200, 10, min=0.05, max=100, step=0.05)
-output5 = TextBox(window, WIDTH- 230, 20+500, 30, 30, fontSize=17)
+slider_Qsy = Slider(window, WIDTH- 230, 50+ 400, 200, 10, min=0.05, max=100, step=0.05)
+output5 = TextBox(window, WIDTH- 230, 20+400, 30, 30, fontSize=17)
 output5.disable()
 
-slider_Qsth = Slider(window, WIDTH- 230, 50+ 600, 200, 10, min=0.05, max=10, step=0.05)
-output6 = TextBox(window, WIDTH- 230, 20+600, 30, 30, fontSize=17)
+slider_Qsth = Slider(window, WIDTH- 230, 50+ 480, 200, 10, min=0.05, max=10, step=0.05)
+output6 = TextBox(window, WIDTH- 230, 20+480, 30, 30, fontSize=17)
 output6.disable()
+
+slider_range = Slider(window, WIDTH- 230, 50+ 560, 200, 10, min=0, max=300, step=1)
+output7 = TextBox(window, WIDTH- 230, 20+560, 30, 30, fontSize=17)
+output7.disable()
+
 
 
 
@@ -86,7 +91,7 @@ def draw_legend():
     f"Estimated pose = [ x = {round(kfr.mean[0])}, y = {round(kfr.mean[1])}, theta = {round(degrees(kfr.mean[2]))}]",
     f"Actual difference = [ x = {round(x - kfr.mean[0])}, y = {round(y - kfr.mean[1])}, theta = {round(degrees(theta - kfr.mean[2]))}]",
     f" Sensors = {agent.n_sensors}  Press s to add 2",
-    "Sliders: [1]: FPS [2,3,4]: R  [5,6,7]: Q "
+    "Sliders: [1]: FPS [2,3,4]: R  [5,6,7]: Q [8]: sensor range"
     
 ]
     y = 50 
@@ -132,6 +137,7 @@ while True:
     Q[0][0] = slider_Qsx.getValue()
     Q[1][1] = slider_Qsy.getValue()
     Q[2][2] = slider_Qsth.getValue()
+    agent.max_distance = slider_range.getValue()
                         
                         
     if start: pygame.draw.line(window, "blue", start, pygame.mouse.get_pos(), 5),
@@ -140,6 +146,6 @@ while True:
     env.draw_sensors(window, show_text=show_text), env.show(window), kfr.correction(), kfr.show(window),draw_legend(),
     
     output.setText(slider.getValue()),output1.setText(slider_Rsx.getValue()),output2.setText(slider_Rsy.getValue()),output3.setText(slider_Rsth.getValue()),
-    output4.setText(slider_Qsx.getValue()), output5.setText(slider_Qsy.getValue()), output6.setText(slider_Qsth.getValue())
+    output4.setText(slider_Qsx.getValue()), output5.setText(slider_Qsy.getValue()), output6.setText(slider_Qsth.getValue()), output7.setText(slider_range.getValue())
     pygame_widgets.update(events), pygame.display.flip()
     dt = clock.tick(FPS) / 1000

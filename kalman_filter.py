@@ -6,6 +6,7 @@ from math import sin,cos,radians, degrees
 from pygame.locals import *
 from  utils import angle_from_vector
 from numpy.random import multivariate_normal
+from experiment1 import *
 
 
 class Kalman_Filter:
@@ -45,7 +46,11 @@ class Kalman_Filter:
                 sensor_vector = np.array(sensor_end) - np.array(sensor_start)
                 theta = angle_from_vector(sensor_vector) + orientation + samples[2]
                 
-                l_detections.append((x, y, theta))
+                if TRAJ:
+                    TRAJ -= 1
+                else:
+                    l_detections.append((x, y, theta))
+                    TRAJ += 10
 
         return l_detections
     
@@ -147,9 +152,10 @@ class PygameKF(Kalman_Filter):
 
         
         for point in self.trajectory[-300:]:
-            pygame.draw.circle(window, "black", point, 2)
+           pygame.draw.circle(window, "black", point, 1)
 
-        #pygame.draw.lines(window, "red", False, self.trajectory, 2)
+        #if len(self.trajectory) >= 5:
+            #pygame.draw.lines(window, "black", False, self.trajectory[-500:], 1)
     
     
         """

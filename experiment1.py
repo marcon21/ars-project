@@ -9,11 +9,12 @@ X_START,Y_START = 300.,300.
 ROTATION_SIZE = pi / 180 * 2
 BASE_MOVE_SPEED = 20 
 AGENT_SIZE, AGENT_COLOR = 20, "orange"
-SENSORS,RANGE = 100, 50
+SENSORS,RANGE = 5, 10
 MEAN = np.array([3, 3, 3])
 COV_MATRIX = np.diag([0, 1, 1])
 R = np.diag([100, 20, 10])
 Q = np.diag([100, 10, 0.1])
+TRAJ = 3 # each traj point a point is added to trajectory
 
 #landmars and walls
 LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 2, "black", 20
