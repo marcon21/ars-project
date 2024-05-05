@@ -6,7 +6,7 @@ from math import sin,cos,radians, degrees
 from pygame.locals import *
 from  utils import angle_from_vector
 from numpy.random import multivariate_normal
-from experiment1 import TRAJ
+from parameters import TRAJ
 
 
 class Kalman_Filter:
@@ -17,7 +17,7 @@ class Kalman_Filter:
         self.cov_matrix = initial_cov_matrix
         self.R = R
         self.Q = Q
-        self.trajectory = [initial_mean[:2]]
+        self.trajectory = [initial_mean[:2]]  
         self.mean_prediction = initial_mean
         self.cov_prediction =initial_cov_matrix
         self.traj = TRAJ

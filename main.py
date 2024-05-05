@@ -11,7 +11,7 @@ from math import pi, degrees,atan2
 import numpy as np
 from random import randint
 from random import random as rand
-from experiment1 import *
+from parameters import *
 
 def reset_agent():
     agent.pos = (window.get_width() / 2, window.get_height() / 2)
@@ -136,13 +136,9 @@ while True:
                 if event.key == K_SPACE: pause_state = True
         
         #update variables based on sliders
-        FPS = slider.getValue()  
-        R[0][0] = slider_Rsx.getValue()
-        R[1][1] = slider_Rsy.getValue()
-        R[2][2] = slider_Rsth.getValue()
-        Q[0][0] = slider_Qsx.getValue()
-        Q[1][1] = slider_Qsy.getValue()
-        Q[2][2] = slider_Qsth.getValue()
+        FPS = slider.getValue()
+        R[0][0], R[1][1], R[2][2] = slider_Rsx.getValue(), slider_Rsy.getValue(), slider_Rsth.getValue()
+        Q[0][0], Q[1][1], Q[2][2] = slider_Qsx.getValue(), slider_Qsy.getValue(), slider_Qsth.getValue()
         agent.max_distance = slider_range.getValue()
                             
                             
@@ -161,10 +157,10 @@ while True:
         
         
         # log file of poses and estimations
-        file.write(f"R = {kfr.R}, Q = {kfr.Q}")
+        #file.write(f"R = {kfr.R}, Q = {kfr.Q}")
         x,y = env.agent.pos
         theta = angle_from_vector(env.agent.direction_vector)
-        file.write(f"{[x,y,theta]}\n")
+        file.write(f"{[x,y,theta]}")
         file.write(f"{kfr.mean}\n")
         
         
