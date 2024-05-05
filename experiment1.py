@@ -7,13 +7,13 @@ from scipy.stats import uniform
 #agent specifics
 X_START,Y_START = 300.,300.
 ROTATION_SIZE = pi / 180 * 2
-BASE_MOVE_SPEED = 10 
+BASE_MOVE_SPEED = 20 
 AGENT_SIZE, AGENT_COLOR = 20, "orange"
-SENSORS,RANGE = 10, 100
+SENSORS,RANGE = 100, 50
 MEAN = np.array([3, 3, 3])
-COV_MATRIX = np.diag([1, 1, 0])
-R = np.diag([10, 20, 1])
-Q = np.diag([20, 10, 1])
+COV_MATRIX = np.diag([0, 1, 1])
+R = np.diag([100, 20, 10])
+Q = np.diag([100, 10, 0.1])
 
 #landmars and walls
 LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 2, "black", 20
@@ -21,8 +21,10 @@ WALLS_TXT, LANDMARK_TXT = "walls.txt", "landmarks_experiment.txt"
 
 
 #environment specifics
-GAME_RES = WIDTH, HEIGHT = 1000,1000
+GAME_RES = WIDTH, HEIGHT = 1300,700
 FPS = 60
+SLIDER_HEIGHT = 5
+SLIDER_WIDTH = 100
 GAME_TITLE, SCREEN_COLOR = "EXPERIMENT 1: ROBOT CAN SEE 3 LANDMARKS", "white"
 INSTRUCTIONS = """
 --------------------

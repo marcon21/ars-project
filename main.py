@@ -1,4 +1,7 @@
 import pygame
+from pygame_widgets.slider import Slider
+from pygame_widgets.textbox import TextBox
+import pygame_widgets.widget
 from pygame.locals import *
 from actors import Agent, Wall, Landmark
 from env import PygameEnviroment, Enviroment
@@ -21,6 +24,24 @@ clock = pygame.time.Clock()
 dt = 0
 pygame.display.set_caption(GAME_TITLE)
 
+
+#SLIDERS TO CONTROL PARAMETERS 
+slider = Slider(window, WIDTH- 230, 50, 200, 10, min=0, max=99, step=1)
+output = TextBox(window, WIDTH- 230, 20, 30, 30, fontSize=17)
+output.disable() 
+
+slider_Rs1 = Slider(window, WIDTH- 230, 50+ 100, 200, 10, min=0, max=10, step=0.1)
+output1 = TextBox(window, WIDTH- 230, 20+100, 30, 30, fontSize=17)
+output1.disable() 
+
+
+
+
+
+
+
+
+
 # Initialize agent
 agent = Agent(x=X_START, y=Y_START, size=AGENT_SIZE,
               move_speed=BASE_MOVE_SPEED, n_sensors=SENSORS, max_distance=RANGE, color=AGENT_COLOR)
@@ -28,6 +49,7 @@ agent = Agent(x=X_START, y=Y_START, size=AGENT_SIZE,
 # Initialize environment and load landmarks
 env = PygameEnviroment(agent=agent)
 env.load_landmarks(LANDMARK_TXT, LANDMARK_SIZE, LANDMARK_COLOR)
+env.load_walls(WALLS_TXT)
 
 
 # Initialize Kalman Filter
@@ -45,7 +67,7 @@ def draw_legend():
     theta = atan2(agent.direction_vector[1], agent.direction_vector[0])
 
     legend_text = [
-    f" FPS = {FPS}  Press v to increase, c to decrease",
+    f" FPS = {FPS}  first slider to adjust",
     f"Position = [ x = {round(x)}, y = {round(y)}, theta = {round(degrees(theta))}]",
     f"Estimated pose = [ x = {round(kfr.mean[0])}, y = {round(kfr.mean[1])}, theta = {round(degrees(kfr.mean[2]))}]",
     f"Actual difference = [ x = {round(x - kfr.mean[0])}, y = {round(y - kfr.mean[1])}, theta = {round(degrees(theta - kfr.mean[2]))}]",
@@ -63,13 +85,14 @@ def draw_legend():
 while True:
     window.fill(SCREEN_COLOR)
     
+    
     while pause_state:
         for event in pygame.event.get():
             if event.type==KEYDOWN:
                 if event.key==K_SPACE:
                     pause_state = False
-    
-    for event in pygame.event.get():
+    events = pygame.event.get()
+    for event in events:
         if event.type == QUIT: quit()
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE: quit()
@@ -86,11 +109,16 @@ while True:
             if event.key == K_s: agent.n_sensors += 2
             if event.key == K_SPACE: pause_state = True
             
-
+    FPS = slider.getValue()  
+    R[0][0] = slider_Rs1.getValue()
                         
                         
-    if start: pygame.draw.line(window, "blue", start, pygame.mouse.get_pos(), 5)
+    if start: pygame.draw.line(window, "blue", start, pygame.mouse.get_pos(), 5),
     env.agent.move_speed = BASE_MOVE_SPEED * dt * 0.5 * (not pause_state)
     if not pause_state: env.move_agent()
-    env.draw_sensors(window, show_text=show_text), env.show(window), kfr.correction(), kfr.show(window),draw_legend(), pygame.display.flip()
+    env.draw_sensors(window, show_text=show_text), env.show(window), kfr.correction(), kfr.show(window),draw_legend(),
+    
+    output.setText(slider.getValue()),output1.setText(slider_Rs1.getValue()),
+    
+    pygame_widgets.update(events), pygame.display.flip()
     dt = clock.tick(FPS) / 1000
