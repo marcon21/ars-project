@@ -30,15 +30,29 @@ slider = Slider(window, WIDTH- 230, 50, 200, 10, min=0, max=99, step=1)
 output = TextBox(window, WIDTH- 230, 20, 30, 30, fontSize=17)
 output.disable() 
 
-slider_Rs1 = Slider(window, WIDTH- 230, 50+ 100, 200, 10, min=0, max=10, step=0.1)
+slider_Rsx = Slider(window, WIDTH- 230, 50+ 100, 200, 10, min=0, max=10, step=0.05)
 output1 = TextBox(window, WIDTH- 230, 20+100, 30, 30, fontSize=17)
 output1.disable() 
 
+slider_Rsy = Slider(window, WIDTH- 230, 50+ 200, 200, 10, min=0, max=10, step=0.05)
+output2 = TextBox(window, WIDTH- 230, 20+200, 30, 30, fontSize=17)
+output2.disable() 
 
+slider_Rsth = Slider(window, WIDTH- 230, 50+ 300, 200, 10, min=0, max=10, step=0.05)
+output3 = TextBox(window, WIDTH- 230, 20+300, 30, 30, fontSize=17)
+output3.disable() 
 
+slider_Qsx = Slider(window, WIDTH- 230, 50+ 400, 200, 10, min=0.05, max=10, step=0.05)
+output4 = TextBox(window, WIDTH- 230, 20+400, 30, 30, fontSize=17)
+output4.disable()
 
+slider_Qsy = Slider(window, WIDTH- 230, 50+ 500, 200, 10, min=0.05, max=10, step=0.05)
+output5 = TextBox(window, WIDTH- 230, 20+500, 30, 30, fontSize=17)
+output5.disable()
 
-
+slider_Qsth = Slider(window, WIDTH- 230, 50+ 600, 200, 10, min=0.05, max=10, step=0.05)
+output6 = TextBox(window, WIDTH- 230, 20+600, 30, 30, fontSize=17)
+output6.disable()
 
 
 
@@ -67,15 +81,17 @@ def draw_legend():
     theta = atan2(agent.direction_vector[1], agent.direction_vector[0])
 
     legend_text = [
-    f" FPS = {FPS}  first slider to adjust",
+    f" FPS = {FPS}",
     f"Position = [ x = {round(x)}, y = {round(y)}, theta = {round(degrees(theta))}]",
     f"Estimated pose = [ x = {round(kfr.mean[0])}, y = {round(kfr.mean[1])}, theta = {round(degrees(kfr.mean[2]))}]",
     f"Actual difference = [ x = {round(x - kfr.mean[0])}, y = {round(y - kfr.mean[1])}, theta = {round(degrees(theta - kfr.mean[2]))}]",
-    f" Sensors = {agent.n_sensors}  Press s to add 2"
+    f" Sensors = {agent.n_sensors}  Press s to add 2",
+    "Sliders: [1]: FPS [2,3,4]: R  [5,6,7]: Q "
+    
 ]
     y = 50 
     for text in legend_text:
-        text_surface = font.render(text, True, "black")
+        text_surface = font.render(text, True, "red")
         text_rect = text_surface.get_rect()
         text_rect.topleft = (50, y)
         window.blit(text_surface, text_rect)
@@ -110,7 +126,12 @@ while True:
             if event.key == K_SPACE: pause_state = True
             
     FPS = slider.getValue()  
-    R[0][0] = slider_Rs1.getValue()
+    R[0][0] = slider_Rsx.getValue()
+    R[1][1] = slider_Rsy.getValue()
+    R[2][2] = slider_Rsth.getValue()
+    Q[0][0] = slider_Qsx.getValue()
+    Q[1][1] = slider_Qsy.getValue()
+    Q[2][2] = slider_Qsth.getValue()
                         
                         
     if start: pygame.draw.line(window, "blue", start, pygame.mouse.get_pos(), 5),
@@ -118,7 +139,7 @@ while True:
     if not pause_state: env.move_agent()
     env.draw_sensors(window, show_text=show_text), env.show(window), kfr.correction(), kfr.show(window),draw_legend(),
     
-    output.setText(slider.getValue()),output1.setText(slider_Rs1.getValue()),
-    
+    output.setText(slider.getValue()),output1.setText(slider_Rsx.getValue()),output2.setText(slider_Rsy.getValue()),output3.setText(slider_Rsth.getValue()),
+    output4.setText(slider_Qsx.getValue()), output5.setText(slider_Qsy.getValue()), output6.setText(slider_Qsth.getValue())
     pygame_widgets.update(events), pygame.display.flip()
     dt = clock.tick(FPS) / 1000
