@@ -2,7 +2,7 @@ from env import Enviroment, PygameEnviroment
 from actors import Agent
 import numpy as np
 import pygame
-from math import sin,cos,radians
+from math import sin,cos,radians, degrees
 from pygame.locals import *
 from  utils import angle_from_vector
 from numpy.random import multivariate_normal
@@ -127,9 +127,9 @@ class PygameKF(Kalman_Filter):
         # print(self.trajectory)
         
         def draw_semi_transparent_ellipse(screen, alpha, pose, horizontal_radius, vertical_radius):
-            surface = pygame.Surface((700, 700), pygame.SRCALPHA)
+            surface = pygame.Surface((horizontal_radius * 2,  vertical_radius * 2), pygame.SRCALPHA)
             pygame.draw.ellipse(surface, (100,100,100,alpha), (0, 0, horizontal_radius * 2, vertical_radius * 2))
-            rotated_surface = pygame.transform.rotate(surface, pose[2])
+            rotated_surface = pygame.transform.rotate(surface, degrees(pose[2]))
             screen.blit(rotated_surface, (pose[0] - horizontal_radius, pose[1] - vertical_radius))
         
         

@@ -30,11 +30,11 @@ slider = Slider(window, WIDTH- 230, 50, 200, 10, min=0, max=99, step=1)
 output = TextBox(window, WIDTH- 230, 20, 30, 30, fontSize=17)
 output.disable() 
 
-slider_Rsx = Slider(window, WIDTH- 230, 50+ 100, 200, 10, min=0, max=10, step=0.05)
+slider_Rsx = Slider(window, WIDTH- 230, 50+ 100, 200, 10, min=0, max=100, step=0.05)
 output1 = TextBox(window, WIDTH- 230, 20+100, 30, 30, fontSize=17)
 output1.disable() 
 
-slider_Rsy = Slider(window, WIDTH- 230, 50+ 200, 200, 10, min=0, max=10, step=0.05)
+slider_Rsy = Slider(window, WIDTH- 230, 50+ 200, 200, 10, min=0, max=100, step=0.05)
 output2 = TextBox(window, WIDTH- 230, 20+200, 30, 30, fontSize=17)
 output2.disable() 
 
@@ -42,11 +42,11 @@ slider_Rsth = Slider(window, WIDTH- 230, 50+ 300, 200, 10, min=0, max=10, step=0
 output3 = TextBox(window, WIDTH- 230, 20+300, 30, 30, fontSize=17)
 output3.disable() 
 
-slider_Qsx = Slider(window, WIDTH- 230, 50+ 400, 200, 10, min=0.05, max=10, step=0.05)
+slider_Qsx = Slider(window, WIDTH- 230, 50+ 400, 200, 10, min=0.05, max=100, step=0.05)
 output4 = TextBox(window, WIDTH- 230, 20+400, 30, 30, fontSize=17)
 output4.disable()
 
-slider_Qsy = Slider(window, WIDTH- 230, 50+ 500, 200, 10, min=0.05, max=10, step=0.05)
+slider_Qsy = Slider(window, WIDTH- 230, 50+ 500, 200, 10, min=0.05, max=100, step=0.05)
 output5 = TextBox(window, WIDTH- 230, 20+500, 30, 30, fontSize=17)
 output5.disable()
 
