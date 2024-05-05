@@ -6,7 +6,7 @@ from pygame.locals import *
 from actors import Agent, Wall, Landmark
 from env import PygameEnviroment, Enviroment
 from kalman_filter import Kalman_Filter, PygameKF
-from utils import intersection, distance_from_wall
+from utils import intersection, distance_from_wall, angle_from_vector
 from math import pi, degrees,atan2
 import numpy as np
 from random import randint
@@ -23,6 +23,9 @@ window = pygame.display.set_mode(GAME_RES, HWACCEL | HWSURFACE | DOUBLEBUF)
 clock = pygame.time.Clock()
 dt = 0
 pygame.display.set_caption(GAME_TITLE)
+
+with open("output.txt", "w") as file:
+    file.write("")
 
 
 #SLIDERS TO CONTROL PARAMETERS 
@@ -104,48 +107,69 @@ def draw_legend():
 
 
 while True:
-    window.fill(SCREEN_COLOR)
     
-    
-    while pause_state:
-        for event in pygame.event.get():
-            if event.type==KEYDOWN:
-                if event.key==K_SPACE:
-                    pause_state = False
-    events = pygame.event.get()
-    for event in events:
-        if event.type == QUIT: quit()
-        if event.type == KEYDOWN:
-            if event.key == K_ESCAPE: quit()
-            if event.key in (K_q, K_LEFT): agent.turn_direction -= ROTATION_SIZE
-            if event.key == K_v : FPS+= 1
-            if event.key == K_c : FPS-= 1
-            if event.key in (K_e, K_RIGHT): agent.turn_direction += ROTATION_SIZE
-            if event.key == K_n: start = pygame.mouse.get_pos() if start is None else (env.add_wall(Wall(start[0], start[1], pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])), None)[1]
-            if event.key == K_s: env.save_walls("walls.txt")
-            if event.key == K_l: env.load_walls("walls.txt"), reset_agent()
-            if event.key == K_BACKSPACE: env.walls.clear()
-            if event.key == K_r: reset_agent()
-            if event.key == K_t: show_text = not show_text
-            if event.key == K_s: agent.n_sensors += 2
-            if event.key == K_SPACE: pause_state = True
-            
-    FPS = slider.getValue()  
-    R[0][0] = slider_Rsx.getValue()
-    R[1][1] = slider_Rsy.getValue()
-    R[2][2] = slider_Rsth.getValue()
-    Q[0][0] = slider_Qsx.getValue()
-    Q[1][1] = slider_Qsy.getValue()
-    Q[2][2] = slider_Qsth.getValue()
-    agent.max_distance = slider_range.getValue()
-                        
-                        
-    if start: pygame.draw.line(window, "blue", start, pygame.mouse.get_pos(), 5),
-    env.agent.move_speed = BASE_MOVE_SPEED * dt * 0.5 * (not pause_state)
-    if not pause_state: env.move_agent()
-    env.draw_sensors(window, show_text=show_text), env.show(window), kfr.correction(), kfr.show(window),draw_legend(),
-    
-    output.setText(slider.getValue()),output1.setText(slider_Rsx.getValue()),output2.setText(slider_Rsy.getValue()),output3.setText(slider_Rsth.getValue()),
-    output4.setText(slider_Qsx.getValue()), output5.setText(slider_Qsy.getValue()), output6.setText(slider_Qsth.getValue()), output7.setText(slider_range.getValue())
-    pygame_widgets.update(events), pygame.display.flip()
-    dt = clock.tick(FPS) / 1000
+    with open("output.txt", "a") as file:
+        window.fill(SCREEN_COLOR)
+        
+        
+        while pause_state:
+            for event in pygame.event.get():
+                if event.type==KEYDOWN:
+                    if event.key==K_SPACE:
+                        pause_state = False
+        events = pygame.event.get()
+        for event in events:
+            if event.type == QUIT: quit()
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE: quit()
+                if event.key in (K_q, K_LEFT): agent.turn_direction -= ROTATION_SIZE
+                if event.key == K_v : FPS+= 1
+                if event.key == K_c : FPS-= 1
+                if event.key in (K_e, K_RIGHT): agent.turn_direction += ROTATION_SIZE
+                if event.key == K_n: start = pygame.mouse.get_pos() if start is None else (env.add_wall(Wall(start[0], start[1], pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])), None)[1]
+                if event.key == K_s: env.save_walls("walls.txt")
+                if event.key == K_l: env.load_walls("walls.txt"), reset_agent()
+                if event.key == K_BACKSPACE: env.walls.clear()
+                if event.key == K_r: reset_agent()
+                if event.key == K_t: show_text = not show_text
+                if event.key == K_s: agent.n_sensors += 2
+                if event.key == K_SPACE: pause_state = True
+        
+        #update variables based on sliders
+        FPS = slider.getValue()  
+        R[0][0] = slider_Rsx.getValue()
+        R[1][1] = slider_Rsy.getValue()
+        R[2][2] = slider_Rsth.getValue()
+        Q[0][0] = slider_Qsx.getValue()
+        Q[1][1] = slider_Qsy.getValue()
+        Q[2][2] = slider_Qsth.getValue()
+        agent.max_distance = slider_range.getValue()
+                            
+                            
+        if start: pygame.draw.line(window, "blue", start, pygame.mouse.get_pos(), 5),
+        env.agent.move_speed = BASE_MOVE_SPEED * dt * 0.5 * (not pause_state)
+        if not pause_state: env.move_agent()
+        env.draw_sensors(window, show_text=show_text), env.show(window), kfr.correction(), kfr.show(window),draw_legend(),
+        
+        #print output of sliders
+        output.setText(slider.getValue()),output1.setText(slider_Rsx.getValue()),
+        output2.setText(slider_Rsy.getValue()),output3.setText(slider_Rsth.getValue()),
+        output4.setText(slider_Qsx.getValue()), output5.setText(slider_Qsy.getValue()), 
+        output6.setText(slider_Qsth.getValue()), output7.setText(slider_range.getValue())
+        pygame_widgets.update(events), 
+        
+        
+        
+        # log file of poses and estimations
+        file.write(f"R = {kfr.R}, Q = {kfr.Q}")
+        x,y = env.agent.pos
+        theta = angle_from_vector(env.agent.direction_vector)
+        file.write(f"{[x,y,theta]}\n")
+        file.write(f"{kfr.mean}\n")
+        
+        
+        
+        #update window
+        pygame.display.flip()
+        
+        dt = clock.tick(FPS) / 1000
