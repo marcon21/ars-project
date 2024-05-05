@@ -234,20 +234,21 @@ class PygameEnviroment(Enviroment):
                     width=2,
                 )
 
-            if show_text:
+            if show_text and sensor_data[i][1][0] < self.agent.max_distance:
                 font = pygame.font.Font(None, 24)
-                text = font.render(str(int(sensor_data[i][0][0])), True, "black")
+                text = font.render("(" + str(int(sensor_data[i][1][0])) + "," + str(int(degrees(sensor_data[i][1][1]))) + ")", True, "black")
+
                 window.blit(
                     text,
                     (
                         self.agent.pos[0]
-                        + sensor_data[i][0]
+                        + sensor_data[i][1][0]
                         * np.cos(
                             self.agent.direction
                             + i * np.pi / (self.agent.n_sensors / 2)
                         ),
                         self.agent.pos[1]
-                        + sensor_data[i][0]
+                        + sensor_data[i][1][0]
                         * np.sin(
                             self.agent.direction
                             + i * np.pi / (self.agent.n_sensors / 2)
