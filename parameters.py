@@ -10,10 +10,10 @@ ROTATION_SIZE = pi / 180 * 2
 BASE_MOVE_SPEED = 20 
 AGENT_SIZE, AGENT_COLOR = 20, "orange"
 SENSORS,RANGE = 5, 10
-MEAN = np.array([3, 3, 3])
-COV_MATRIX = np.diag([0, 1, 1])
-R = np.diag([100, 20, 10])
-Q = np.diag([100, 10, 0.1])
+MEAN = np.array([X_START +200 // 2,Y_START+ 300, 0])
+COV_MATRIX = np.diag([1, 1, 1])
+R = np.diag([1, 1, 0.05])
+Q = np.diag([1, 1, 0.05])
 TRAJ = 1 # each traj point a point is added to trajectory
 
 #landmars and walls
