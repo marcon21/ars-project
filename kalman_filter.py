@@ -105,24 +105,21 @@ class Kalman_Filter:
                     np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix
                 )
             else:
-                cov_aux_mat = self.cov_matrix
-                Q_aux_mat = self.Q
+
                 mean = np.array([self.mean[0], self.mean[1]])
                 K = np.dot(
-                    cov_aux_mat[:2, :2],
-                    np.linalg.inv(cov_aux_mat[:2, :2] + Q_aux_mat[:2, :2]),
+                    self.cov_matrix,
+                    np.linalg.inv(self.cov_matrix + self.Q),
                 )
                 x = meas[0][0]
                 y = meas[0][1]
 
-                new_mean = mean + np.dot(K, np.array([x, y]) - mean)
+                new_mean = mean + np.dot(K[:2, :2], np.array([x, y]) - mean)
                 self.mean[0] = new_mean[0]
                 self.mean[1] = new_mean[1]
-                cov_matrix_2 = np.dot(
-                    np.eye(2) - np.dot(K, np.eye(2)), cov_aux_mat[:2, :2]
+                self.cov_matrix = np.dot(
+                    np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix
                 )
-                cov_aux_mat[:2, :2] = cov_matrix_2
-                self.cov_matrix = cov_aux_mat
 
         else:
             K = np.dot(
