@@ -2,9 +2,9 @@ from env import Enviroment, PygameEnviroment
 from actors import Agent
 import numpy as np
 import pygame
-from math import sin,cos,radians, degrees
+from math import sin, cos, radians, degrees
 from pygame.locals import *
-from  utils import angle_from_vector
+from utils import angle_from_vector
 from numpy.random import multivariate_normal
 from parameters import TRAJ
 
@@ -17,16 +17,17 @@ class Kalman_Filter:
         self.cov_matrix = initial_cov_matrix
         self.R = R
         self.Q = Q
-        self.trajectory = [initial_mean[:2]]  
+        self.trajectory = [initial_mean[:2]]
         self.mean_prediction = initial_mean
-        self.cov_prediction =initial_cov_matrix
+        self.cov_prediction = initial_cov_matrix
         self.traj = TRAJ
 
-    #sensor data: [(int_point, (d, orientation, signature), (sensor.start, sensor.end))]
+    # sensor data: [(int_point, (d, orientation, signature), (sensor.start, sensor.end))]
     def measurements(self):
         mu = np.array([0, 0, 0])
         sensor_data = self.env.get_sensor_data(
-            n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance)
+            n_sensors=self.agent.n_sensors, max_distance=self.agent.max_distance
+        )
         l_detections = []
         for perception in sensor_data:
 
@@ -40,21 +41,21 @@ class Kalman_Filter:
                 samples = multivariate_normal(mu, self.Q, 1)[0]
                 distance, orientation, signature = perception[1]
                 sensor_start, sensor_end = perception[2]
-                
+
                 x = self.agent.pos[0] + samples[0]
                 y = self.agent.pos[1] + samples[1]
-                
+
                 sensor_vector = np.array(sensor_end) - np.array(sensor_start)
                 theta = angle_from_vector(sensor_vector) + orientation + samples[2]
-                
-                if self.traj:
-                    self.traj -= 1
-                else:
-                    l_detections.append((x, y, theta))
-                    self.traj += TRAJ
+
+                # if self.traj:
+                #     self.traj -= 1
+                # else:
+                l_detections.append((x, y, theta))
+                # self.traj += TRAJ
 
         return l_detections
-    
+
     def prediction(self):
         mu = np.array([0, 0, 0])
         samples = multivariate_normal(mu, self.R, 1)[0]
@@ -68,9 +69,7 @@ class Kalman_Filter:
             + (self.agent.direction_vector * self.agent.move_speed)[1]
             + samples[1]
         )
-        self.mean[2] = (
-            angle_from_vector(self.agent.direction_vector) + samples[2]
-        )
+        self.mean[2] = angle_from_vector(self.agent.direction_vector) + samples[2]
         self.cov_matrix = self.cov_matrix + self.R
         self.mean_prediction, self.cov_prediction = self.mean, self.cov_matrix
 
@@ -121,7 +120,7 @@ class Kalman_Filter:
         else:
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
 
-        self.trajectory.append(self.mean[:2])
+        self.trajectory.append([self.mean[0], self.mean[1]])
 
 
 class PygameKF(Kalman_Filter):
@@ -131,55 +130,61 @@ class PygameKF(Kalman_Filter):
     def show(self, window):
         # print(self.mean[:2])
         # print(self.trajectory)
-        
-        def draw_semi_transparent_ellipse(screen, alpha, pose, horizontal_radius, vertical_radius):
-            surface = pygame.Surface((horizontal_radius * 2,  vertical_radius * 2), pygame.SRCALPHA)
-            pygame.draw.ellipse(surface, (100,100,100,alpha), (0, 0, horizontal_radius * 2, vertical_radius * 2))
+
+        def draw_semi_transparent_ellipse(
+            screen, alpha, pose, horizontal_radius, vertical_radius
+        ):
+            surface = pygame.Surface(
+                (horizontal_radius * 2, vertical_radius * 2), pygame.SRCALPHA
+            )
+            pygame.draw.ellipse(
+                surface,
+                (100, 100, 100, alpha),
+                (0, 0, horizontal_radius * 2, vertical_radius * 2),
+            )
             rotated_surface = pygame.transform.rotate(surface, degrees(pose[2]))
-            screen.blit(rotated_surface, (pose[0] - horizontal_radius, pose[1] - vertical_radius))
-        
-        
-        #after prediction
-        draw_semi_transparent_ellipse(window, 200, self.mean, self.cov_matrix[0][0], self.cov_matrix[1][1])
-        pygame.draw.line(window, "blue", (self.env.agent.pos[0], self.agent.pos[1]),
-                 (self.mean[0] + 100 *cos(self.mean[2]),
-                  self.mean[1] + 100 * sin(self.mean[2])), 2)
-        
-        #before prediction
-        draw_semi_transparent_ellipse(window, 50, self.mean_prediction, self.cov_prediction[0][0], self.cov_prediction[1][1])
-        pygame.draw.line(window, "grey", (self.env.agent.pos[0], self.agent.pos[1]),
-                 (self.mean_prediction[0] + 100 *cos(self.mean_prediction[2]),
-                  self.mean_prediction[1] + 100 * sin(self.mean_prediction[2])), 2)
+            screen.blit(
+                rotated_surface,
+                (pose[0] - horizontal_radius, pose[1] - vertical_radius),
+            )
 
-        
+        # after prediction
+        draw_semi_transparent_ellipse(
+            window, 200, self.mean, self.cov_matrix[0][0], self.cov_matrix[1][1]
+        )
+        pygame.draw.line(
+            window,
+            "blue",
+            (self.env.agent.pos[0], self.agent.pos[1]),
+            (
+                self.mean[0] + 100 * cos(self.mean[2]),
+                self.mean[1] + 100 * sin(self.mean[2]),
+            ),
+            2,
+        )
+
+        # before prediction
+        draw_semi_transparent_ellipse(
+            window,
+            50,
+            self.mean_prediction,
+            self.cov_prediction[0][0],
+            self.cov_prediction[1][1],
+        )
+        pygame.draw.line(
+            window,
+            "grey",
+            (self.env.agent.pos[0], self.agent.pos[1]),
+            (
+                self.mean_prediction[0] + 100 * cos(self.mean_prediction[2]),
+                self.mean_prediction[1] + 100 * sin(self.mean_prediction[2]),
+            ),
+            2,
+        )
+
+        # print(self.trajectory[-3:])
         for point in self.trajectory[-300:]:
-           pygame.draw.circle(window, "black", point, 1)
+            pygame.draw.circle(window, "purple", point, 1)
 
-        #if len(self.trajectory) >= 5:
-            #pygame.draw.lines(window, "black", False, self.trajectory[-500:], 1)
-    
-    
-        """
-        trajectory_list = [
-            tuple(self.trajectory[i]) for i in range(0, len(self.trajectory), 5)
-        ]
-        print(trajectory_list)
-
-        if len(self.trajectory) > 6:
-            for el in trajectory_list:
-                pygame.draw.circle(window, "black", el, 1)
-
-        if len(self.trajectory) >= 200:
-            for i in range(0, len(self.trajectory), 200):
-
-                pygame.draw.ellipse(
-                    window,
-                    "red",
-                    (
-                        self.trajectory[i][0],
-                        self.trajectory[i][1],
-                        self.cov_matrix[0][0],
-                        self.cov_matrix[1][1],
-                    ),
-                )
-        """
+        # if len(self.trajectory) >= 5:
+        # pygame.draw.lines(window, "black", False, self.trajectory[-500:], 1)

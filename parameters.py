@@ -3,26 +3,25 @@ from math import pi
 from scipy.stats import uniform
 
 
-
-#agent specifics
-X_START,Y_START = 300.,300.
+# agent specifics
+X_START, Y_START = 300.0, 300.0
 ROTATION_SIZE = pi / 180 * 2
-BASE_MOVE_SPEED = 20 
+BASE_MOVE_SPEED = 20
 AGENT_SIZE, AGENT_COLOR = 20, "orange"
-SENSORS,RANGE = 5, 10
-MEAN = np.array([X_START +200 // 2,Y_START+ 300, 0])
+SENSORS, RANGE = 5, 10
+MEAN = np.array([X_START + 200 // 2, Y_START + 300, 0])
 COV_MATRIX = np.diag([1, 1, 1])
 R = np.diag([30, 120, 1])
 Q = np.diag([1, 1, 0.05])
-TRAJ = 1 # each traj point a point is added to trajectory
+TRAJ = 1  # each traj point a point is added to trajectory
 
-#landmars and walls
-LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE  = 2, "black", 20
+# landmars and walls
+LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE = 2, "black", 20
 WALLS_TXT, LANDMARK_TXT = "walls.txt", "landmarks_experiment.txt"
 
 
-#environment specifics
-GAME_RES = WIDTH, HEIGHT = 1300,700
+# environment specifics
+GAME_RES = WIDTH, HEIGHT = 1300, 700
 FPS = 60
 SLIDER_HEIGHT = 5
 SLIDER_WIDTH = 100
@@ -38,5 +37,6 @@ Press 'BACKSPACE' to remove all walls \n
 Press 'r' to reset agent \n
 Press 't' to toggle text visibility \n
 Press 'SPACE' to toggle movement \n
-""".format(ROTATION_SIZE * 180/pi, ROTATION_SIZE * 180/pi)
-
+""".format(
+    ROTATION_SIZE * 180 / pi, ROTATION_SIZE * 180 / pi
+)

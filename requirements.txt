@@ -1,3 +1,6 @@
 pygame==2.5.2
 numpy
 pygame_widgets==1.0.0
+tabulate
+matplotlib
+scipy
