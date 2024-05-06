@@ -12,7 +12,7 @@ AGENT_SIZE, AGENT_COLOR = 20, "orange"
 SENSORS,RANGE = 5, 10
 MEAN = np.array([X_START +200 // 2,Y_START+ 300, 0])
 COV_MATRIX = np.diag([1, 1, 1])
-R = np.diag([1, 1, 0.05])
+R = np.diag([30, 120, 1])
 Q = np.diag([1, 1, 0.05])
 TRAJ = 1 # each traj point a point is added to trajectory
 
