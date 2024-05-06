@@ -8,7 +8,7 @@ from utils import angle_from_vector
 from numpy.random import multivariate_normal
 from parameters import TRAJ
 
-
+#Authors: Aurora Pia Ghiardelli, Daniel Marcon, Enrico Cavinato
 class Kalman_Filter:
     def __init__(self, env: Enviroment, initial_mean, initial_cov_matrix, R, Q):
         self.env = env
@@ -130,7 +130,7 @@ class Kalman_Filter:
 
         self.trajectory.append([self.mean[0], self.mean[1]])
 
-
+#Auythors: ENrico Cavinato, Daniel Marcon
 class PygameKF(Kalman_Filter):
     def __init__(self, env: Enviroment, initial_mean, initial_cov_matrix, R, Q):
         super().__init__(env, initial_mean, initial_cov_matrix, R, Q)

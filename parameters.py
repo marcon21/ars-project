@@ -2,6 +2,7 @@ import numpy as np
 from math import pi
 from scipy.stats import uniform
 
+#Author: Enrico Cavinato 
 
 # agent specifics
 X_START, Y_START = 300.0, 300.0

@@ -2,6 +2,8 @@ import numpy as np
 import math
 
 
+# Author: Daniel Marcon 
+
 def intersection(seg1, seg2):
     def cross_product(p1, p2):
         return p1[0] * p2[1] - p1[1] * p2[0]

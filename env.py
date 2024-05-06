@@ -8,7 +8,7 @@ from copy import deepcopy
 import math
 from math import cos,sin,degrees
 
-
+# Author: Daniel Marcon an Aurora Pia Ghiardelli
 class Enviroment:
     def __init__(
         self, agent: Agent, walls: List[Wall] = [], landmarks: List[Landmark] = []
@@ -137,7 +137,7 @@ class Enviroment:
                 landmark = Landmark(x, y, size, i, color)
                 self.add_landmark(landmark)
 
-
+#Authors: we worked toghether on this 
 class PygameEnviroment(Enviroment):
     def __init__(self, agent: Agent, walls: List[Wall] = [], color="black"):
         super().__init__(agent, walls=walls)

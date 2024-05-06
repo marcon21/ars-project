@@ -13,7 +13,7 @@ from random import randint
 from random import random as rand
 from parameters import *
 
-
+#Author: Enrico Cavinato
 def reset_agent():
     agent.pos = (window.get_width() / 2, window.get_height() / 2)
     agent.direction_vector = np.array([1, 0])
