@@ -36,13 +36,13 @@ output = TextBox(window, WIDTH - 230, 20, 30, 30, fontSize=17)
 output.disable()
 
 slider_Rsx = Slider(
-    window, WIDTH - 230, 50 + 80, 200, 10, min=0, max=100, step=0.05, initial=R[0][0]
+    window, WIDTH - 230, 50 + 80, 200, 10, min=0, max=500, step=0.05, initial=R[0][0]
 )
 output1 = TextBox(window, WIDTH - 230, 20 + 80, 30, 30, fontSize=17)
 output1.disable()
 
 slider_Rsy = Slider(
-    window, WIDTH - 230, 50 + 160, 200, 10, min=0, max=100, step=0.05, initial=R[1][1]
+    window, WIDTH - 230, 50 + 160, 200, 10, min=0, max=500, step=0.05, initial=R[1][1]
 )
 output2 = TextBox(window, WIDTH - 230, 20 + 160, 30, 30, fontSize=17)
 output2.disable()
@@ -60,7 +60,7 @@ slider_Qsx = Slider(
     200,
     10,
     min=0.05,
-    max=100,
+    max=500,
     step=0.05,
     initial=Q[0][0],
 )
@@ -74,7 +74,7 @@ slider_Qsy = Slider(
     200,
     10,
     min=0.05,
-    max=100,
+    max=500,
     step=0.05,
     initial=Q[1][1],
 )
