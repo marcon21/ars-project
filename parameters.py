@@ -8,7 +8,7 @@ X_START, Y_START = 300.0, 300.0
 ROTATION_SIZE = pi / 180 * 2
 BASE_MOVE_SPEED = 20
 AGENT_SIZE, AGENT_COLOR = 20, "orange"
-SENSORS, RANGE = 5, 10
+SENSORS, RANGE = 100, 10
 MEAN = np.array([X_START + 200 // 2, Y_START + 300, 0])
 COV_MATRIX = np.diag([1, 1, 1])
 R = np.diag([30, 120, 1])
@@ -16,7 +16,7 @@ Q = np.diag([1, 1, 0.05])
 TRAJ = 1  # each traj point a point is added to trajectory
 
 # landmars and walls
-LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE = 2, "black", 20
+LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE = 2, "black", 2
 WALLS_TXT, LANDMARK_TXT = "walls.txt", "landmarks_experiment.txt"
 
 
