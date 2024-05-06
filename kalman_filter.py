@@ -77,47 +77,58 @@ class Kalman_Filter:
         # print("true position", self.agent.pos)
         # print("prediction", self.mean, self.cov_matrix)
 
-        K = np.dot(
-            self.cov_matrix,
-            np.linalg.inv(self.cov_matrix + self.Q),
-        )
         self.prediction()
         meas = self.measurements()
 
         if meas:
-
-            if len(meas) == 1:
-                x = meas[0][0]
-                y = meas[0][1]
-                theta = meas[0][2]
-                # ("measurments", x, y, theta)
-                self.mean = self.mean + np.dot(K, (x, y, theta) - self.mean)
-                # print("stima", self.mean)
-                self.cov_matrix = np.dot(
-                    np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix
+            if len(meas) >= 2:
+                K = np.dot(
+                    self.cov_matrix,
+                    np.linalg.inv(self.cov_matrix + self.Q),
                 )
-
-            else:
                 sum_x = 0
                 sum_y = 0
                 sum_theta = 0
-
                 for tupla in meas:
                     sum_x += tupla[0]
                     sum_y += tupla[1]
                     sum_theta += tupla[2]
-
                 mean_x = sum_x / len(meas)
                 mean_y = sum_y / len(meas)
                 mean_theta = sum_theta / len(meas)
+                # ("measurments", x, y, theta)
                 self.mean = self.mean + np.dot(
                     K, (mean_x, mean_y, mean_theta) - self.mean
                 )
+                # print("stima", self.mean)
                 self.cov_matrix = np.dot(
                     np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix
                 )
+            else:
+                cov_aux_mat = self.cov_matrix
+                Q_aux_mat = self.Q
+                mean = np.array([self.mean[0], self.mean[1]])
+                K = np.dot(
+                    cov_aux_mat[:2, :2],
+                    np.linalg.inv(cov_aux_mat[:2, :2] + Q_aux_mat[:2, :2]),
+                )
+                x = meas[0][0]
+                y = meas[0][1]
+
+                new_mean = mean + np.dot(K, np.array([x, y]) - mean)
+                self.mean[0] = new_mean[0]
+                self.mean[1] = new_mean[1]
+                cov_matrix_2 = np.dot(
+                    np.eye(2) - np.dot(K, np.eye(2)), cov_aux_mat[:2, :2]
+                )
+                cov_aux_mat[:2, :2] = cov_matrix_2
+                self.cov_matrix = cov_aux_mat
 
         else:
+            K = np.dot(
+                self.cov_matrix,
+                np.linalg.inv(self.cov_matrix + self.Q),
+            )
             self.cov_matrix = np.dot(np.eye(3) - np.dot(K, np.eye(3)), self.cov_matrix)
 
         self.trajectory.append([self.mean[0], self.mean[1]])
