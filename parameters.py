@@ -17,7 +17,7 @@ TRAJ = 1  # each traj point a point is added to trajectory
 
 # landmars and walls
 LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE = 2, "black", 2
-WALLS_TXT, LANDMARK_TXT = "walls.txt", "landmarks_experiment.txt"
+WALLS_TXT, LANDMARK_TXT = "./data/walls.txt", "./data/landmarks_experiment.txt"
 
 
 # environment specifics
