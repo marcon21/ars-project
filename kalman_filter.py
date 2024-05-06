@@ -2,7 +2,7 @@ from env import Enviroment, PygameEnviroment
 from actors import Agent
 import numpy as np
 import pygame
-from math import sin, cos, radians, degrees
+from math import sin, cos, radians, degrees, sqrt
 from pygame.locals import *
 from utils import angle_from_vector
 from numpy.random import multivariate_normal
@@ -158,15 +158,15 @@ class PygameKF(Kalman_Filter):
 
         # after prediction
         draw_semi_transparent_ellipse(
-            window, 200, self.mean, self.cov_matrix[0][0], self.cov_matrix[1][1]
+            window, 200, self.mean, sqrt(self.cov_matrix[0][0]), sqrt(self.cov_matrix[1][1])
         )
         pygame.draw.line(
             window,
             "blue",
-            (self.env.agent.pos[0], self.agent.pos[1]),
+            (self.env.agent.pos[0], self.env.agent.pos[1]),
             (
-                self.mean[0] + 100 * cos(self.mean[2]),
-                self.mean[1] + 100 * sin(self.mean[2]),
+                self.env.agent.pos[0] + 100 * cos(self.mean[2]),
+                self.env.agent.pos[1] + 100 * sin(self.mean[2]),
             ),
             2,
         )
@@ -176,16 +176,16 @@ class PygameKF(Kalman_Filter):
             window,
             50,
             self.mean_prediction,
-            self.cov_prediction[0][0],
-            self.cov_prediction[1][1],
+            sqrt(self.cov_prediction[0][0]),
+            sqrt(self.cov_prediction[1][1]),
         )
         pygame.draw.line(
             window,
             "grey",
             (self.env.agent.pos[0], self.agent.pos[1]),
             (
-                self.mean_prediction[0] + 100 * cos(self.mean_prediction[2]),
-                self.mean_prediction[1] + 100 * sin(self.mean_prediction[2]),
+                self.env.agent.pos[0] + 100 * cos(self.mean_prediction[2]),
+                self.env.agent.pos[1] + 100 * sin(self.mean_prediction[2]),
             ),
             2,
         )
