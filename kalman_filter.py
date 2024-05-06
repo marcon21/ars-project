@@ -163,10 +163,10 @@ class PygameKF(Kalman_Filter):
         pygame.draw.line(
             window,
             "blue",
-            (self.env.agent.pos[0], self.agent.pos[1]),
+            (self.env.agent.pos[0], self.env.agent.pos[1]),
             (
-                self.mean[0] + 100 * cos(self.mean[2]),
-                self.mean[1] + 100 * sin(self.mean[2]),
+                self.env.agent.pos[0] + 100 * cos(self.mean[2]),
+                self.env.agent.pos[1] + 100 * sin(self.mean[2]),
             ),
             2,
         )
@@ -184,8 +184,8 @@ class PygameKF(Kalman_Filter):
             "grey",
             (self.env.agent.pos[0], self.agent.pos[1]),
             (
-                self.mean_prediction[0] + 100 * cos(self.mean_prediction[2]),
-                self.mean_prediction[1] + 100 * sin(self.mean_prediction[2]),
+                self.env.agent.pos[0] + 100 * cos(self.mean_prediction[2]),
+                self.env.agent.pos[1] + 100 * sin(self.mean_prediction[2]),
             ),
             2,
         )
