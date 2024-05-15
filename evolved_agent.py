@@ -1,12 +1,6 @@
-import actors
+from actors import Agent
 
-class EvolvedAgent(actors.Agent):
-    def __init__(self, genome):
-        self.genome = genome
-        self.controller = self.genome.to_neural_network()
-
-    def act(self, state):
-        return self.brain.forward(state)
-
-    def __str__(self):
-        return f"EvolvedAgent(genome={self.genome})"
+class EvolvedAgent(Agent):
+    def __init__(self, x=0, y=0, move_speed=5, size=40, n_sensors=10, max_distance=200, color="red",controller=None) -> None:
+        super().__init__(x, y, move_speed, size, n_sensors, max_distance, color)
+        self.controller = controller
