@@ -16,5 +16,6 @@ class NN(nn.Module):
         x = F.softmax(self.fc3(x))
         return x
     
-    def set_weights(self,weights):
+    #TODO: Implement this method
+    def set_weights(self):
         pass
