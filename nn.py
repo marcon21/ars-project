@@ -11,12 +11,20 @@ class NN(nn.Module):
         self.activation = activation
 
     def forward(self, x):
+        '''
+        Forward pass of the network
+        '''
+        if not isinstance(x, torch.Tensor):
+            raise ValueError("Input should be a torch.Tensor")
         x = self.activation(self.fc1(x))
         x = self.activation(self.fc2(x))
         x = F.softmax(self.fc3(x))
         return x
     
     def set_weights(self, weights):
+        '''
+        Set the weights of the network from a list of 6 elements
+        '''
         if len(weights) != 6 :
             raise ValueError("Weights should be a list of 6 elements")
         self.fc1.weight.data = weights[0]  
@@ -27,4 +35,7 @@ class NN(nn.Module):
         self.fc3.bias.data = weights[5]
         
     def get_weights(self):
+        '''
+        Returns the weights of the network as a list of 6 elements
+        '''
         return [self.fc1.weight.data, self.fc1.bias.data, self.fc2.weight.data, self.fc2.bias.data, self.fc3.weight.data, self.fc3.bias.data]
