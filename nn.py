@@ -3,6 +3,7 @@ import torch
 from torch.nn import functional as F
 
 
+# Autor: Enrico Cavinato
 class NN(nn.Module):
 
     def __init__(

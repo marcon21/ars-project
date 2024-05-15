@@ -38,6 +38,8 @@ class Enviroment:
 
             if current_d <= self.agent.size:
                 # Vector of the wall direction
+                self.agent.number_obstacles += 1
+                """' #
                 wall_vector = np.array(
                     [wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]]
                 )
@@ -58,7 +60,7 @@ class Enviroment:
                 if np.dot(self.agent.direction_vector, -wall_to_agent) > 0:
                     # If the agent is moving towards the wall only consider the parallel component
                     move_vector = parallel_component
-
+            
         # Check if the agent is making an illegal move
         for wall in self.walls:
             intersection_point = intersection(
@@ -72,7 +74,8 @@ class Enviroment:
             )
             if intersection_point:
                 print("ILLEGAL MOVE")
-                return
+                return  
+            """
 
         self.agent.apply_vector(move_vector)
         self.agent.rotate(self.agent.turn_direction / 10)
@@ -106,8 +109,11 @@ class Enviroment:
                             intersection_point,
                             current_angle,
                         )
-                    if distance < self.agent.min_distance:
-                        self.agent.min_distance = distance
+                        if (
+                            distance < self.agent.min_distance
+                            and distance >= self.agent.size
+                        ):
+                            self.agent.min_distance = distance
 
             # find measurements from landmarks
             for l in self.landmarks:
@@ -125,8 +131,11 @@ class Enviroment:
                                     current_angle,
                                     l.signature,
                                 )
-                            if distance < self.agent.min_distance:
-                                self.agent.min_distance = distance
+                                if (
+                                    distance < self.agent.min_distance
+                                    and distance >= self.agent.size
+                                ):
+                                    self.agent.min_distance = distance
 
             sensor_data.append(
                 (int_point, (d, orientation, signature), (sensor.start, sensor.end))
@@ -174,7 +183,7 @@ class Enviroment:
         self.agent.fitness_score = (
             20 * self.agent.terrain_explored
             + 10 * self.agent.min_distance
-            + 20 * math.exp(-self.agent.obstacle_touched)
+            + 20 * math.exp(-self.agent.number_obstacles)
         )
 
         pass

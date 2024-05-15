@@ -30,8 +30,10 @@ class Agent:
         max_distance=200,
         color="red",
         model=None,
+        genetic_representation=None,
         terrain_explored=None,
         min_distance=math.inf,
+        number_obstacles=0,
         fitness_score=-1,
     ) -> None:
         self.pos = np.array([x, y])

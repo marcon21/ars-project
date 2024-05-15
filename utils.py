@@ -1,8 +1,9 @@
 import numpy as np
 import math
+import random
 
+# Author: Daniel Marcon, Aurora Pia Ghiardelli
 
-# Author: Daniel Marcon 
 
 def intersection(seg1, seg2):
     def cross_product(p1, p2):
@@ -94,8 +95,9 @@ def distance_from_wall(wall, point, coords=False):
 def distance(p1, p2):
     return np.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
+
 def angle_from_vector(vector):
-    return math.atan2(vector[1],vector[0])
+    return math.atan2(vector[1], vector[0])
 
 
 def intersection_line_circle(wall, circle):
@@ -123,3 +125,14 @@ def intersection_line_circle(wall, circle):
         x2 + circle.pos[0],
         y2 + circle.pos[1],
     )
+
+
+def create_pairs(pop, fertility_rate=0.5):
+    pairs = []
+    random.shuffle(pop)
+
+    for i in range(0, int(fertility_rate * len(pop)), 2):  # Create pairs of agents
+        pair = (pop[i], pop[i + 1])
+        pairs.append(pair)
+
+    return pairs
