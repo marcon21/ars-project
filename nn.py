@@ -16,6 +16,15 @@ class NN(nn.Module):
         x = F.softmax(self.fc3(x))
         return x
     
-    #TODO: Implement this method
-    def set_weights(self):
-        pass
+    def set_weights(self, weights):
+        if len(weights) != 6 :
+            raise ValueError("Weights should be a list of 6 elements")
+        self.fc1.weight.data = weights[0]  
+        self.fc1.bias.data = weights[1]
+        self.fc2.weight.data = weights[2]
+        self.fc2.bias.data = weights[3]
+        self.fc3.weight.data = weights[4]
+        self.fc3.bias.data = weights[5]
+        
+    def get_weights(self):
+        return [self.fc1.weight.data, self.fc1.bias.data, self.fc2.weight.data, self.fc2.bias.data, self.fc3.weight.data, self.fc3.bias.data]
