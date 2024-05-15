@@ -10,3 +10,7 @@ class EvolvedAgent(actors.Agent):
 
     def __str__(self):
         return f"EvolvedAgent(genome={self.genome})"
+    
+
+
+    

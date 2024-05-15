@@ -2,11 +2,18 @@ import pygame
 from pygame.locals import *
 from typing import List
 from actors import Agent, Wall, Landmark
-from utils import intersection, distance_from_wall, intersection_line_circle, angle_from_vector
+from utils import (
+    intersection,
+    distance_from_wall,
+    intersection_line_circle,
+    angle_from_vector,
+)
 import numpy as np
 from copy import deepcopy
 import math
-from math import cos,sin,degrees
+from math import cos, sin, degrees
+from main import window
+
 
 # Author: Daniel Marcon an Aurora Pia Ghiardelli
 class Enviroment:
@@ -73,35 +80,53 @@ class Enviroment:
     def get_sensor_data(self, n_sensors=8, max_distance=200):
         sensor_data = []
         position = self.agent.pos
-        x,y = position
-        
-        #iterate sensors 
+        x, y = position
+
+        # iterate sensors
         for i in range(n_sensors):
             current_angle = self.agent.direction + i * np.pi / (n_sensors / 2)
-            sensor = Wall(x, y, x + max_distance * np.cos(current_angle), y + max_distance * np.sin(current_angle),)
+            sensor = Wall(
+                x,
+                y,
+                x + max_distance * np.cos(current_angle),
+                y + max_distance * np.sin(current_angle),
+            )
 
             d = max_distance
             int_point, orientation, signature = None, None, None
-            
-            #find measurements from walls
+
+            # find measurements from walls
             for wall in self.walls:
                 intersection_point = intersection(sensor, wall)
                 if intersection_point:
                     distance = np.linalg.norm(intersection_point - position)
                     if distance < d:
-                        d, int_point, orientation = distance, intersection_point, current_angle
-                        
-            #find measurements from landmarks            
+                        d, int_point, orientation = (
+                            distance,
+                            intersection_point,
+                            current_angle,
+                        )
+                    if distance < self.agent.min_distance:
+                        self.agent.min_distance = distance
+
+            # find measurements from landmarks
             for l in self.landmarks:
                 intersection_point = intersection_line_circle(sensor, l)
 
                 if intersection_point:
                     for i in intersection_point:
                         # is intersection point on the sensor?
-                        if ( np.dot(i-position,sensor.end - position) > 0):
-                            distance = np.linalg.norm(i-position)
+                        if np.dot(i - position, sensor.end - position) > 0:
+                            distance = np.linalg.norm(i - position)
                             if distance < d:
-                                d, int_point, orientation,signature = distance, i, current_angle, l.signature
+                                d, int_point, orientation, signature = (
+                                    distance,
+                                    i,
+                                    current_angle,
+                                    l.signature,
+                                )
+                            if distance < self.agent.min_distance:
+                                self.agent.min_distance = distance
 
             sensor_data.append(
                 (int_point, (d, orientation, signature), (sensor.start, sensor.end))
@@ -129,30 +154,69 @@ class Enviroment:
                 )
 
         print("Walls loaded from", filename)
-            
+
     def load_landmarks(self, filename, size, color):
         with open(filename, "r") as f:
             for i, line in enumerate(f, start=1):
                 x, y = map(int, line.split())
                 landmark = Landmark(x, y, size, i, color)
                 self.add_landmark(landmark)
-    
-    #TODO: legge sensori, forward alla rete, gira le ruote            
+
+    # TODO: legge sensori, forward alla rete, gira le ruote
     def think(self):
         pass
-    
-    #TODO: stima la funzione di fintess
-    def fitness_score(self)-> float:
-        
-        #w1* terrain_explored + w2* distanza da muri ( min  sum distances) + w3 * avoidance ( e^-noggetti toccati)
-        #tenere traccia
-        pass
-    
-    @property
-    def explored_terrain(self)-> float:
+
+    # TODO: stima la funzione di fintess
+    def fitness_score(self) -> float:
+
+        # w1* terrain_explored + w2* distanza da muri ( min  sum distances) + w3 * avoidance ( e^-noggetti toccati)
+        # tenere traccia
+        self.agent.fitness_score = (
+            20 * self.agent.terrain_explored
+            + 10 * self.agent.min_distance
+            + 20 * math.exp(-self.agent.obstacle_touched)
+        )
+
         pass
 
-#Authors: we worked toghether on this 
+    def create_grid(self):
+
+        self.map = {}
+        height = np.arange(0, window.get_height(), 0.25)
+        width = np.arange(0, window.get_width(), 0.25)
+        for i in width:
+            for j in height:
+
+                self.map[(i, j)] = 0
+                for wall in self.walls:
+                    start_x, start_y = wall.start
+                    end_x, end_y = wall.end
+                    if (start_x <= i <= end_x or end_x <= i <= start_x) and (
+                        start_y <= j <= end_y or end_y <= j <= start_y
+                    ):
+                        del self.map[(i, j)]
+
+                for landmark in self.landmarks:
+                    l_x, l_y = landmark.pos
+                    if l_x == i and l_y == j:
+                        del self.map[(i, j)]
+
+    @property
+    def explored_terrain(self) -> float:
+        # Compute the percentage of explored terrain
+        not_percurred_map = self.map
+        for (
+            el
+        ) in (
+            self.agent.path
+        ):  # Domanda stupida, devo contare anche il diametro del robot?
+            if el in not_percurred_map:
+                del not_percurred_map[el]
+
+        self.agent.terrain_explored = len(not_percurred_map) / len(self.map)
+
+
+# Authors: we worked toghether on this
 class PygameEnviroment(Enviroment):
     def __init__(self, agent: Agent, walls: List[Wall] = [], color="black"):
         super().__init__(agent, walls=walls)
@@ -173,13 +237,20 @@ class PygameEnviroment(Enviroment):
 
         # Draw agent
         pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
-        
-        #Draw agent orientation
-        pygame.draw.line(window, "orange", (self.agent.pos[0], self.agent.pos[1]),
-                 (self.agent.pos[0] + 100 * math.cos(angle_from_vector(self.agent.direction_vector)),
-                  self.agent.pos[1] + 100 * math.sin(angle_from_vector(self.agent.direction_vector))), 2)
-        
-        
+
+        # Draw agent orientation
+        pygame.draw.line(
+            window,
+            "orange",
+            (self.agent.pos[0], self.agent.pos[1]),
+            (
+                self.agent.pos[0]
+                + 100 * math.cos(angle_from_vector(self.agent.direction_vector)),
+                self.agent.pos[1]
+                + 100 * math.sin(angle_from_vector(self.agent.direction_vector)),
+            ),
+            2,
+        )
 
         pygame.draw.lines(window, "black", False, self.agent.path, 2)
         self.agent.path = self.agent.path[-1000:]
@@ -213,9 +284,15 @@ class PygameEnviroment(Enviroment):
         # Draw landmarks
         for landmark in self.landmarks:
             pygame.draw.circle(window, landmark.color, landmark.pos, landmark.size)
-            #draw landmark positions
-            window.blit(pygame.font.Font(None, 15).render(f"({landmark.pos[0]}, {landmark.pos[1]}), {landmark.signature}", True, "green"), (landmark.pos[0], landmark.pos[1]))
-
+            # draw landmark positions
+            window.blit(
+                pygame.font.Font(None, 15).render(
+                    f"({landmark.pos[0]}, {landmark.pos[1]}), {landmark.signature}",
+                    True,
+                    "green",
+                ),
+                (landmark.pos[0], landmark.pos[1]),
+            )
 
     def draw_sensors(self, window, show_text=False):
         sensor_data = self.get_sensor_data(
@@ -251,7 +328,15 @@ class PygameEnviroment(Enviroment):
 
             if show_text and sensor_data[i][1][0] < self.agent.max_distance:
                 font = pygame.font.Font(None, 24)
-                text = font.render("(" + str(int(sensor_data[i][1][0])) + "," + str(int(degrees(sensor_data[i][1][1]))) + ")", True, "black")
+                text = font.render(
+                    "("
+                    + str(int(sensor_data[i][1][0]))
+                    + ","
+                    + str(int(degrees(sensor_data[i][1][1])))
+                    + ")",
+                    True,
+                    "black",
+                )
 
                 window.blit(
                     text,

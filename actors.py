@@ -1,6 +1,8 @@
 import pygame
 from pygame.locals import *
 import numpy as np
+import math
+
 
 # Author: Daniel Marcon
 class Wall:
@@ -27,6 +29,10 @@ class Agent:
         n_sensors=10,
         max_distance=200,
         color="red",
+        model=None,
+        terrain_explored=None,
+        min_distance=math.inf,
+        fitness_score=-1,
     ) -> None:
         self.pos = np.array([x, y])
         self.size = size
@@ -37,7 +43,6 @@ class Agent:
         self.n_sensors = n_sensors
         self.max_distance = max_distance
         self.path = [(x, y)]
-
 
     @property
     def direction(self):
