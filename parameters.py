@@ -5,6 +5,7 @@ from scipy.stats import uniform
 #Author: Enrico Cavinato 
 
 # agent specifics
+AGENT_NUMBER = 5
 X_START, Y_START = 350.0, 300.0
 AGENT_SIZE, AGENT_COLOR = 10, "orange"
 HEIGHT,WIDTH = 1000,1000
