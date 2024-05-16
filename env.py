@@ -12,7 +12,6 @@ import numpy as np
 from copy import deepcopy
 import math
 from math import cos, sin, degrees
-from main import window
 
 
 # Author: Daniel Marcon an Aurora Pia Ghiardelli
@@ -39,7 +38,7 @@ class Enviroment:
             if current_d <= self.agent.size:
                 # Vector of the wall direction
                 self.agent.number_obstacles += 1
-                """' #
+                """' # Questa parte di codice del collision detection non andrebbe tolta?
                 wall_vector = np.array(
                     [wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]]
                 )
@@ -191,8 +190,8 @@ class Enviroment:
     def create_grid(self):
 
         self.map = {}
-        height = np.arange(0, window.get_height(), 0.25)
-        width = np.arange(0, window.get_width(), 0.25)
+        height = range(0, 700, 50)
+        width = np.arange(0, 1300, 50)
         for i in width:
             for j in height:
 

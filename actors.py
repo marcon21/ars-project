@@ -39,11 +39,11 @@ class Agent:
         self.n_sensors = n_sensors
         self.max_distance = max_distance
         self.path = [(x, y)]
-        self.model = (None,)
-        self.genetic_representation = (None,)
-        self.terrain_explored = (None,)
-        self.min_distance = (math.inf,)
-        self.number_obstacles = (0,)
+        self.model = None
+        self.genetic_representation = None
+        self.terrain_explored = None
+        self.min_distance = math.inf
+        self.number_obstacles = 0
         self.fitness_score = -1
 
     @property
