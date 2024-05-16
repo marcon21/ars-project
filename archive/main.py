@@ -11,7 +11,7 @@ from math import pi, degrees, atan2
 import numpy as np
 from random import randint
 from random import random as rand
-from parameters import *
+from archive.parameters import *
 
 #Author: Enrico Cavinato
 def reset_agent():
