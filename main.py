@@ -12,7 +12,7 @@ window = pygame.display.set_mode(GAME_RES, HWACCEL | HWSURFACE | DOUBLEBUF)
 clock = pygame.time.Clock()
 pygame.display.set_caption(GAME_TITLE)
 
-agent = EvolvedAgent(x=X_START,y = Y_START,n_sensors=12, controller=NN(),size=AGENT_SIZE,color=AGENT_COLOR)
+agent = EvolvedAgent(x=X_START,y = Y_START,n_sensors=12, controller=NN(),size=AGENT_SIZE,color=AGENT_COLOR, max_distance=MAX_RANGE)
 env = PygameEvolvedEnviroment(agent, height=HEIGHT, width=WIDTH, instants=INSTANTS, w1=W1, w2=W2, w3=W3)
 env.load_landmarks(LANDMARK_TXT, LANDMARK_SIZE, LANDMARK_COLOR)
 env.load_walls(WALLS_TXT)
@@ -47,12 +47,13 @@ while True:
     if start:
         pygame.draw.line(window, "blue", start, pygame.mouse.get_pos(), 5)
     
-    if not pause_state:
-        env.move_agent()
+
     
     frame_count += 1
     if frame_count == INSTANTS:
         quit()
+    if not pause_state:
+        env.move_agent()
     env.draw_sensors(window, show_text=show_text)
     env.show(window)
 
