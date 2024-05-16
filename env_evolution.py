@@ -35,6 +35,7 @@ class EnvEvolution(Enviroment):
         self.height = height
         self.width = width
         self.map = np.zeros((self.height//10, self.width//10))
+        self.square_size = self.height//10
         self.collisions = 0
         self.movements = 0
         self.instants = instants
@@ -54,7 +55,7 @@ class EnvEvolution(Enviroment):
             vr (float): the right velocity of the agent
         '''
         self.movements += 1
-        self.map[self.agent.pos[0]//10, self.agent.pos[1]//10] = 1 
+        self.map[round(self.agent.pos[0]//self.square_size), round(self.agent.pos[1]//self.square_size)] = 1 
         sensor_data = self.get_sensor_data(self.agent.n_sensors,self.agent.max_distance)
         for data in sensor_data:
             if data[1][0] < self.agent.size:
