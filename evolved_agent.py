@@ -1,7 +1,8 @@
 import actors
+import math
 
 
-class EvolvedAgent(actors.Agent):  # non so quanto sia utile questo altro file
+class EvolvedAgent(actors.Agent):
     def __init__(self, genome):
         self.genome = genome
         self.controller = self.genome.to_neural_network()

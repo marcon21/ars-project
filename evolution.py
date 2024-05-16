@@ -3,11 +3,8 @@ from actors import Agent
 from nn import NN
 from utils import create_pairs
 import math
-import pygad
 import numpy as np
 import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
 
 
 # Author: Aurora Pia Ghiardelli
@@ -58,14 +55,8 @@ class Evolution:
                 n_sensors=10,
                 max_distance=200,
                 color="red",
-                model=self.create_model(),
-                genetic_representation=None,
-                terrain_explored=None,
-                min_distance=math.inf,
-                number_obstacles=0,
-                fitness_score=-1,
             )
-
+            self.agent.model = self.create_model()
             # agent.model.init_hidden()
             if i == 0:
                 number_par = (
@@ -132,12 +123,6 @@ class Evolution:
                 n_sensors=10,
                 max_distance=200,
                 color="red",
-                model=self.create_model(),
-                genetic_representation=None,
-                terrain_explored=None,
-                min_distance=math.inf,
-                number_obstacles=0,
-                fitness_score=-1,
             )
             child2 = Agent(
                 x=parent2.pos[0],
@@ -147,12 +132,6 @@ class Evolution:
                 n_sensors=10,
                 max_distance=200,
                 color="red",
-                model=self.create_model(),
-                genetic_representation=None,
-                terrain_explored=None,
-                min_distance=math.inf,
-                number_obstacles=0,
-                fitness_score=-1,
             )
             for i, (p1, p2, c1, c2) in enumerate(  # Crossover between the two parents
                 zip(
@@ -181,13 +160,15 @@ class Evolution:
                         loc=mean, scale=scale
                     )
 
-    def train(self, n_generations):  # Training of the agents// Da rivedere
+    def train(
+        self, n_generations
+    ):  # Training of the agents// DA SISTEMARE DA CAPIRE COME RESETTARE LÉNVIRONEMENT
 
         for generation in range(n_generations):
-            self.env.reset()
+            self.env.reset()  # We need to reset the environemnt at the beginning of each generation
             self.create_population()
             for agent in self.population:
-                agent.fitness_score = self.env.run(agent)
+                agent.fitness_score = self.env.fitness_score(agent)
             self.proportionate_selection()
             self.crossover()
             self.mutation()

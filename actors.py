@@ -29,12 +29,6 @@ class Agent:
         n_sensors=10,
         max_distance=200,
         color="red",
-        model=None,
-        genetic_representation=None,
-        terrain_explored=None,
-        min_distance=math.inf,
-        number_obstacles=0,
-        fitness_score=-1,
     ) -> None:
         self.pos = np.array([x, y])
         self.size = size
@@ -45,6 +39,12 @@ class Agent:
         self.n_sensors = n_sensors
         self.max_distance = max_distance
         self.path = [(x, y)]
+        self.model = (None,)
+        self.genetic_representation = (None,)
+        self.terrain_explored = (None,)
+        self.min_distance = (math.inf,)
+        self.number_obstacles = (0,)
+        self.fitness_score = -1
 
     @property
     def direction(self):
