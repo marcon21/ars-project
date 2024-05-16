@@ -114,7 +114,9 @@ class EnvEvolution(Enviroment):
                 print("ILLEGAL MOVE")
                 return
 
+        
         self.agent.apply_vector(move_vector)
+        self.agent.rotate(dtheta)
         
     def fitness_score(self)-> float:
         return self.W1 * self.explored_terrain + self.W2 * np.mean(self.distance) + self.W3 * np.exp(-self.collisions)
