@@ -18,7 +18,7 @@ class NN(nn.Module):
     '''
     def __init__(self, n_sensors=12, x1=32, x2=4, activation=F.relu):
         super(NN, self).__init__()
-        self.fc1 = nn.Linear(n_sensors, x1)
+        self.fc1 = nn.Linear(n_sensors+x2, x1)
         self.fc2 = nn.Linear(x1, x2)
         self.fc3 = nn.Linear(x2, 2)
         self.activation = activation
