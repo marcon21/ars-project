@@ -136,21 +136,6 @@ class Enviroment:
                 x, y = map(int, line.split())
                 landmark = Landmark(x, y, size, i, color)
                 self.add_landmark(landmark)
-    
-    #TODO: legge sensori, forward alla rete, gira le ruote            
-    def think(self):
-        pass
-    
-    #TODO: stima la funzione di fintess
-    def fitness_score(self)-> float:
-        
-        #w1* terrain_explored + w2* distanza da muri ( min  sum distances) + w3 * avoidance ( e^-noggetti toccati)
-        #tenere traccia
-        pass
-    
-    @property
-    def explored_terrain(self)-> float:
-        pass
 
 #Authors: we worked toghether on this 
 class PygameEnviroment(Enviroment):
