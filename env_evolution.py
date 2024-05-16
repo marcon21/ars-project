@@ -10,12 +10,6 @@ from utils import distance_from_wall, intersection, angle_from_vector
 import math
 import torch
 
-HEIGHT = 800
-WIDTH = 800
-W1,W2,W3 = 0.5, 0.3, 0.2
-INSTANTS = 1000
-
-
 class EnvEvolution(Enviroment):    
     
     '''
@@ -36,7 +30,7 @@ class EnvEvolution(Enviroment):
         W3 (float): the weight of the collisions in the fitness score
         distance (np.array): the distance of the agent from the walls in the instants
     '''
-    def __init__(self, agent: EvolvedAgent, walls: List[Wall] = [], landmarks: List[Landmark] = [], height=HEIGHT, width=WIDTH,instants=INSTANTS, W1=W1, W2=W2, W3=W3):
+    def __init__(self, agent: EvolvedAgent, walls: List[Wall] = [], landmarks: List[Landmark] = [], height=800, width=800,instants=1000, W1=0.5, W2=0.3, W3=0.2):
         super().__init__(agent, walls, landmarks)
         self.height = height
         self.width = width
@@ -66,15 +60,17 @@ class EnvEvolution(Enviroment):
             if data[1][0] < self.agent.size:
                 self.collisions += 1
         self.distance[self.movements] = np.min([data[1][0] for data in sensor_data])  #REVIEW 
-        distances = [data[1][0] for data in sensor_data]
+        distances = [float(data[1][0]) for data in sensor_data]
         print(distances)
-        vl,vr = self.agent.controller.forward(torch.tensor(sensor_data[1][0]).float())
+        vl,vr = self.agent.controller.forward(torch.tensor(distances))
         return vl,vr
         
     def move_agent(self, dt=1 / 60):
         vl,vr = self.think()
         ds = dt * (vl + vr) / 2
+        dx,dy = np.cos(ds), np.sin(ds)  
         dtheta = dt * (vr - vl) / self.agent.size  
+        move_vector = self.agent.direction_vector + np.array([round(dx),round(dy)])
 
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
@@ -117,9 +113,7 @@ class EnvEvolution(Enviroment):
                 print("ILLEGAL MOVE")
                 return
 
-        self.agent.pos.x += np.cos(ds)
-        self.agent.pos.y += np.sin(ds)
-        self.agent.rotate(dtheta)
+        self.agent.apply_vector(move_vector)
         
     def fitness_score(self)-> float:
         return self.W1 * self.explored_terrain + self.W2 * np.mean(self.distance) + self.W3 * np.exp(-self.collisions)
@@ -131,10 +125,8 @@ class EnvEvolution(Enviroment):
     
 class PygameEvolvedEnviroment(EnvEvolution):
 
-    def __init__(self, agent: Agent, walls: List[Wall] = [], color="black"):
-        super().__init__(agent, walls=walls)
-
-        pass
+    def __init__(self, agent: Agent, walls: List[Wall] = [], color="black", landmarks: List[Landmark] = [], height=800, width=800, instants=1000, w1=0.5, w2=0.3, w3=0.2):
+        super().__init__(agent, walls=walls, landmarks=[], height=height, width=width, instants=instants, W1=w1, W2=w2, W3=w3)
 
     def show(self, window):
         for wall in self.walls:
