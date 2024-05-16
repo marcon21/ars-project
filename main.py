@@ -16,15 +16,13 @@ dt = 1
 
 # Inizializzazione dell'agente e dell'ambiente
 agent = EvolvedAgent(n_sensors=12, controller=NN())
-env = PygameEvolvedEnviroment(agent)
+env = PygameEvolvedEnviroment(agent, height=HEIGHT, width=WIDTH, instants=INSTANTS, w1=W1, w2=W2, w3=W3)
 env.load_landmarks(LANDMARK_TXT, LANDMARK_SIZE, LANDMARK_COLOR)
 env.load_walls(WALLS_TXT)
 
 # Variabili di stato
 pause_state, show_text = False, False
 start = None
-
-print(INSTRUCTIONS)
 
 # Loop principale del gioco
 while True:
@@ -37,10 +35,6 @@ while True:
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 quit()
-            if event.key in (K_q, K_LEFT):
-                agent.turn_direction -= ROTATION_SIZE
-            if event.key in (K_e, K_RIGHT):
-                agent.turn_direction += ROTATION_SIZE
             if event.key == K_n:
                 start = (
                     pygame.mouse.get_pos()
