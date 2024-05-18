@@ -6,13 +6,12 @@ from torch.nn import functional as F
 #Author: Enrico Cavinato 
 
 # agent specifics
-AGENT_NUMBER = 5
+AGENT_NUMBER = 10
 X_START, Y_START = 350.0, 300.0
-N_SENSORS, MAX_DISTANCE = 10, 200
+N_SENSORS, MAX_DISTANCE = 12, 200
 AGENT_SIZE, AGENT_COLOR = 10, "orange"
-HEIGHT,WIDTH = 1000,1000
-W1,W2,W3 = 0.5, 0.3, 0.2
-INSTANTS = 10000
+W1,W2,W3 = 0.9, 0.05, 0.05
+INSTANTS = 100
 ACTIVATION = F.relu
 
 # landmars and walls
@@ -21,13 +20,13 @@ WALLS_TXT, LANDMARK_TXT = "./data/walls.txt", "./data/landmarks_experiment.txt"
 
 
 # environment specifics
-GAME_RES = WIDTH, HEIGHT = 1300, 700
-FPS = 60
+GAME_RES = WIDTH, HEIGHT = 1000, 900
+FPS = 200
 GAME_TITLE, SCREEN_COLOR = "SELF NAVIGATION", "white"
 
 
 #evolution specifics
-GENERATIONS = 100
+GENERATIONS = 5
 INPUT_SIZE = 12
 HIDDEN_SIZE = 32
 HIDDEN_SIZE2 = 4
