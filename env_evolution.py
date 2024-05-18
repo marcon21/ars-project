@@ -30,21 +30,38 @@ class EnvEvolution(Enviroment):
         W3 (float): the weight of the collisions in the fitness score
         distance (np.array): the distance of the agent from the walls in the instants
     '''
-    def __init__(self, agent: EvolvedAgent, walls: List[Wall] = [], landmarks: List[Landmark] = [], height=800, width=800,instants=1000, W1=0.5, W2=0.3, W3=0.2):
+    def __init__(self, agent: EvolvedAgent, walls: List[Wall] = [], landmarks: List[Landmark] = [], height=800, width=800,instants=1000, w1=0.5, w2=0.3, w3=0.2):
         super().__init__(agent, walls, landmarks)
         self.height = height
         self.width = width
-        self.map = np.zeros((self.height//10, self.width//10))
-        self.square_size = self.height//10
+        self.map = np.zeros((self.width//10, self.height//10))
         self.collisions = 0
         self.movements = 0
         self.instants = instants
-        self.W1 = W1        
-        self.W2 = W2
-        self.W3 = W3
+        self.W1 = w1        
+        self.W2 = w2
+        self.W3 = w3
         self.distance = self.agent.max_distance * np.ones(self.instants)
             
-    #TODO: legge sensori, forward alla rete, gira le ruote   
+            
+            
+    def update_fitness_params(self,sensor_data):
+        
+        min_distance = np.inf
+        #upgrade terrain explored
+        x_grid, y_grid = round(self.agent.pos[0]//10), round(self.agent.pos[1]//10)
+        self.map[x_grid, y_grid] = 1
+        
+        for data in sensor_data:
+            distance = data[1][0]
+            #upgrade collisions
+            if distance <= self.agent.size:
+                self.collisions += 1
+            #upgrade minimum distance from walls per instant
+            if min_distance > distance:
+                min_distance = distance
+        self.distance[self.movements] = min_distance
+        
     # (int_point, (d, orientation, signature), (sensor.start, sensor.end))         
     def think(self):
         '''
@@ -55,14 +72,9 @@ class EnvEvolution(Enviroment):
             vr (float): the right velocity of the agent
         '''
         self.movements += 1
-        self.map[round(self.agent.pos[0]//self.square_size), round(self.agent.pos[1]//self.square_size)] = 1 
         sensor_data = self.get_sensor_data(self.agent.n_sensors,self.agent.max_distance)
-        for data in sensor_data:
-            if data[1][0] < self.agent.size:
-                self.collisions += 1
-        self.distance[self.movements] = np.min([data[1][0] for data in sensor_data])  #REVIEW 
+        self.update_fitness_params(sensor_data)
         distances = [float(data[1][0]) for data in sensor_data]
-        print(distances)
         vl,vr = self.agent.controller.forward(torch.tensor(distances))
         return vl,vr
         
@@ -129,7 +141,7 @@ class EnvEvolution(Enviroment):
 class PygameEvolvedEnviroment(EnvEvolution):
 
     def __init__(self, agent: Agent, walls: List[Wall] = [], color="black", landmarks: List[Landmark] = [], height=800, width=800, instants=1000, w1=0.5, w2=0.3, w3=0.2):
-        super().__init__(agent, walls=walls, landmarks=[], height=height, width=width, instants=instants, W1=w1, W2=w2, W3=w3)
+        super().__init__(agent, walls=walls, landmarks=[], height=height, width=width, instants=instants, w1=w1, w2=w2, w3=w3)
 
     def show(self, window):
         for wall in self.walls:
@@ -163,7 +175,7 @@ class PygameEvolvedEnviroment(EnvEvolution):
 
         # Draw Estimated Path based on the agent direction
         path = []
-        temp_agent = deepcopy(self.agent)
+        #temp_agent = deepcopy(self.agent)
         # pygame.draw.lines(window, "blue", False, path, width=2)
 
         # Draw landmarks
@@ -180,7 +192,7 @@ class PygameEvolvedEnviroment(EnvEvolution):
 
         for i in range(self.agent.n_sensors):
             c = "green"
-            if sensor_data[i][0] is not None and sensor_data[i][1][2] is not None:
+            if sensor_data[i][0] is not None:
                 c = "green"
                 pygame.draw.circle(window, c, sensor_data[i][0], 5)
 
