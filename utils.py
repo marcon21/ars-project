@@ -123,3 +123,13 @@ def intersection_line_circle(wall, circle):
         x2 + circle.pos[0],
         y2 + circle.pos[1],
     )
+
+def create_pairs(pop, fertility_rate=0.5):
+    pairs = []
+    random.shuffle(pop)
+
+    for i in range(0, int(fertility_rate * len(pop)), 2):  # Create pairs of agents
+        pair = (pop[i], pop[i + 1])
+        pairs.append(pair)
+
+    return pairs
