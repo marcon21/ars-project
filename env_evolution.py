@@ -11,25 +11,7 @@ import math
 import torch
 
 class EnvEvolution(Enviroment):    
-    
-    '''
-    Class that represents the enviroment for the evolution of the agent
-    
-    Attributes: 
-        agent (EvolvedAgent): the agent that will evolve
-        walls (List[Wall]): the walls of the enviroment
-        landmarks (List[Landmark]): the landmarks of the enviroment
-        height (int): the height of the enviroment
-        width (int): the width of the enviroment
-        map (np.array): the map of the enviroment
-        collisions (int): the number of collisions of the agent
-        movements (int): the number of movements of the agent
-        instants (int): the number of instants of the enviroment
-        W1 (float): the weight of the explored terrain in the fitness score
-        W2 (float): the weight of the distance in the fitness score
-        W3 (float): the weight of the collisions in the fitness score
-        distance (np.array): the distance of the agent from the walls in the instants
-    '''
+
     def __init__(self, agent: EvolvedAgent, walls: List[Wall] = [], landmarks: List[Landmark] = [], height=800, width=800,instants=1000, w1=0.5, w2=0.3, w3=0.2):
         super().__init__(agent, walls, landmarks)
         self.height = height
@@ -44,41 +26,34 @@ class EnvEvolution(Enviroment):
         self.distance = self.agent.max_distance * np.ones(self.instants)
             
             
-            
-    def update_fitness_params(self,sensor_data):
-        
-        min_distance = np.inf
-        #upgrade terrain explored
-        x_grid, y_grid = round(self.agent.pos[0]//10), round(self.agent.pos[1]//10)
-        self.map[x_grid, y_grid] = 1
-        
-        for data in sensor_data:
-            distance = data[1][0]
-            #upgrade collisions
-            if distance <= self.agent.size:
-                self.collisions += 1
-            #upgrade minimum distance from walls per instant
-            if min_distance > distance:
-                min_distance = distance
-        self.distance[self.movements] = min_distance
-        
-    # (int_point, (d, orientation, signature), (sensor.start, sensor.end))         
+    def reset(self, random=False):
+        if random:
+            self.agent.pos = np.array([np.random.randint(0, self.width), np.random.randint(0, self.height)], dtype=np.float64)
+            self.agent.direction_vector = np.array([np.random.randint(-1, 2), np.random.randint(-1, 2)], dtype=np.float64)
+        else:
+            self.agent.pos = np.array([self.width // 2, self.height // 2], dtype=np.float64)
+        self.collisions = 0
+        self.movements = 0
+        self.map = np.zeros((self.width // 10, self.height // 10))
+        self.distance = self.agent.max_distance * np.ones(self.instants)    
+  
     def think(self):
-        '''
-        Think function of the agent
+        # Get sensor data
+        sensor_data = self.get_sensor_data(self.agent.n_sensors, self.agent.max_distance)
         
-        Returns:
-            vl (float): the left velocity of the agent
-            vr (float): the right velocity of the agent
-        '''
-        self.movements += 1
-        sensor_data = self.get_sensor_data(self.agent.n_sensors,self.agent.max_distance)
-        self.update_fitness_params(sensor_data)
-        distances = [float(data[1][0]) for data in sensor_data]
+        # Update terrain explored
+        self.map[round(self.agent.pos[0])//10, round(self.agent.pos[1])//10] = 1
+        
+        # Calculate mean distance and count collisions
+        distances = np.array([data[1][0] for data in sensor_data], dtype=np.float32)
+        mean_distance = np.mean(distances)
+        self.distance[self.movements] = mean_distance
+        self.collisions += np.sum(distances <= 0)
+        
         vl,vr = self.agent.controller.forward(torch.tensor(distances))
         return vl,vr
         
-    def move_agent(self, dt=1 / 60):
+    def move_agent(self, dt=1/200 ):
         vl,vr = self.think()
         ds = dt * (vl + vr) / 2
         dx,dy = np.cos(ds), np.sin(ds)  
@@ -129,13 +104,14 @@ class EnvEvolution(Enviroment):
         
         self.agent.apply_vector(move_vector)
         self.agent.rotate(dtheta)
+        self.movements += 1
         
     def fitness_score(self)-> float:
         return self.W1 * self.explored_terrain + self.W2 * np.mean(self.distance) + self.W3 * np.exp(-self.collisions)
     
     @property
     def explored_terrain(self)-> float:
-        return np.sum(self.map) / (self.height//10 * self.width//10)
+        return np.sum(self.map) / (self.width//10 * self.height//10)
     
     
 class PygameEvolvedEnviroment(EnvEvolution):
@@ -158,8 +134,8 @@ class PygameEvolvedEnviroment(EnvEvolution):
         
         
 
-        pygame.draw.lines(window, "black", False, self.agent.path, 2)
-        self.agent.path = self.agent.path[-1000:]
+        #pygame.draw.lines(window, "black", False, self.agent.path, 2)
+        #self.agent.path = self.agent.path[-1000:]
 
         # Draw agent direction
         pygame.draw.line(
