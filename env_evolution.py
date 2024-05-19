@@ -38,11 +38,11 @@ class EnvEvolution(Enviroment):
         self.distance = self.agent.max_distance * np.ones(self.instants)    
   
     def think(self):
-        # Get sensor data
-        sensor_data = self.get_sensor_data(self.agent.n_sensors, self.agent.max_distance)
-        
         # Update terrain explored
         self.map[round(self.agent.pos[0])//10, round(self.agent.pos[1])//10] = 1
+        
+        # Get sensor data
+        sensor_data = self.get_sensor_data(self.agent.n_sensors, self.agent.max_distance)
         
         # Calculate mean distance and count collisions
         distances = np.array([data[1][0] for data in sensor_data], dtype=np.float32)
@@ -53,7 +53,9 @@ class EnvEvolution(Enviroment):
         vl,vr = self.agent.controller.forward(torch.tensor(distances))
         return vl,vr
         
-    def move_agent(self, dt=1/200 ):
+
+
+    def move_agent(self, dt=1/60 ):
         vl,vr = self.think()
         ds = dt * (vl + vr) / 2
         dx,dy = np.cos(ds), np.sin(ds)  
