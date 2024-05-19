@@ -3,14 +3,14 @@ from math import pi
 from scipy.stats import uniform
 from torch.nn import functional as F
 
-#Author: Enrico Cavinato 
+# Author: Enrico Cavinato
 
 # agent specifics
 AGENT_NUMBER = 10
 X_START, Y_START = 350.0, 300.0
 N_SENSORS, MAX_DISTANCE = 12, 200
 AGENT_SIZE, AGENT_COLOR = 10, "orange"
-W1,W2,W3 = 0.9, 0.05, 0.05
+W1, W2, W3 = 0.9, 0.05, 0.05
 INSTANTS = 100
 ACTIVATION = F.relu
 
@@ -25,8 +25,8 @@ FPS = 200
 GAME_TITLE, SCREEN_COLOR = "SELF NAVIGATION", "white"
 
 
-#evolution specifics
-GENERATIONS = 5
+# evolution specifics
+GENERATIONS = 50
 INPUT_SIZE = 12
 HIDDEN_SIZE = 32
 HIDDEN_SIZE2 = 4

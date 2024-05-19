@@ -2,7 +2,7 @@ from env import Enviroment
 from evolved_agent import EvolvedAgent
 from actors import Agent, Wall, Landmark
 from typing import List
-import numpy as np  
+import numpy as np
 import pygame
 from copy import deepcopy
 from math import degrees, atan2, pi
@@ -10,58 +10,78 @@ from utils import distance_from_wall, intersection, angle_from_vector
 import math
 import torch
 
-class EnvEvolution(Enviroment):    
 
-    def __init__(self, agent: EvolvedAgent, walls: List[Wall] = [], landmarks: List[Landmark] = [], height=800, width=800,instants=1000, w1=0.5, w2=0.3, w3=0.2):
+class EnvEvolution(Enviroment):
+
+    def __init__(
+        self,
+        agent: EvolvedAgent,
+        walls: List[Wall] = [],
+        landmarks: List[Landmark] = [],
+        height=800,
+        width=800,
+        instants=1000,
+        w1=0.5,
+        w2=0.3,
+        w3=0.2,
+    ):
         super().__init__(agent, walls, landmarks)
         self.height = height
         self.width = width
-        self.map = np.zeros((self.width//10, self.height//10))
+        self.map = np.zeros((self.width // 10, self.height // 10))
         self.collisions = 0
         self.movements = 0
         self.instants = instants
-        self.W1 = w1        
+        self.W1 = w1
         self.W2 = w2
         self.W3 = w3
         self.distance = self.agent.max_distance * np.ones(self.instants)
-            
-            
+
     def reset(self, random=False):
         if random:
-            self.agent.pos = np.array([np.random.randint(0, self.width), np.random.randint(0, self.height)], dtype=np.float64)
-            self.agent.direction_vector = np.array([np.random.randint(-1, 2), np.random.randint(-1, 2)], dtype=np.float64)
+            self.agent.pos = np.array(
+                [np.random.randint(0, self.width), np.random.randint(0, self.height)],
+                dtype=np.float64,
+            )
+            self.agent.direction_vector = np.array(
+                [np.random.randint(-1, 2), np.random.randint(-1, 2)], dtype=np.float64
+            )
         else:
-            self.agent.pos = np.array([self.width // 2, self.height // 2], dtype=np.float64)
+            self.agent.pos = np.array(
+                [self.width // 2, self.height // 2], dtype=np.float64
+            )
         self.collisions = 0
         self.movements = 0
         self.map = np.zeros((self.width // 10, self.height // 10))
-        self.distance = self.agent.max_distance * np.ones(self.instants)    
-  
+        self.distance = self.agent.max_distance * np.ones(self.instants)
+
     def think(self):
         # Update terrain explored
-        self.map[round(self.agent.pos[0])//10, round(self.agent.pos[1])//10] = 1
-        
+        self.map[
+            round(self.agent.pos[0]) // 10 - 1, round(self.agent.pos[1]) // 10 - 1
+        ] = 1
+
         # Get sensor data
-        sensor_data = self.get_sensor_data(self.agent.n_sensors, self.agent.max_distance)
-        
+        sensor_data = self.get_sensor_data(
+            self.agent.n_sensors, self.agent.max_distance
+        )
+
         # Calculate mean distance and count collisions
         distances = np.array([data[1][0] for data in sensor_data], dtype=np.float32)
         mean_distance = np.mean(distances)
         self.distance[self.movements] = mean_distance
         self.collisions += np.sum(distances <= 0)
-        
-        vl,vr = self.agent.controller.forward(torch.tensor(distances))
-        return vl,vr
-        
 
+        vl, vr = self.agent.controller.forward(torch.tensor(distances))
+        return vl, vr
 
-    def move_agent(self, dt=1/60 ):
-        vl,vr = self.think()
+    def move_agent(self, dt=1 / 60):
+        vl, vr = self.think()
         ds = dt * (vl + vr) / 2
-        dx,dy = np.cos(ds), np.sin(ds)  
-        dtheta = dt * (vr - vl) / self.agent.size  
-        move_vector = self.agent.direction_vector + np.array([round(dx),round(dy)])
-
+        dx, dy = np.cos(ds), np.sin(ds)
+        dtheta = dt * (vr - vl) / self.agent.size
+        move_vector = self.agent.direction_vector + np.array([round(dx), round(dy)])
+        """
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
 
@@ -87,7 +107,7 @@ class EnvEvolution(Enviroment):
                 if np.dot(self.agent.direction_vector, -wall_to_agent) > 0:
                     # If the agent is moving towards the wall only consider the parallel component
                     move_vector = parallel_component
-
+        
         # Check if the agent is making an illegal move
         for wall in self.walls:
             intersection_point = intersection(
@@ -102,24 +122,49 @@ class EnvEvolution(Enviroment):
             if intersection_point:
                 print("ILLEGAL MOVE")
                 return
-
-        
+        """
         self.agent.apply_vector(move_vector)
         self.agent.rotate(dtheta)
         self.movements += 1
-        
-    def fitness_score(self)-> float:
-        return self.W1 * self.explored_terrain + self.W2 * np.mean(self.distance) + self.W3 * np.exp(-self.collisions)
-    
+
+    def fitness_score(self) -> float:
+        return (
+            self.W1 * self.explored_terrain
+            + self.W2 * np.mean(self.distance)
+            + self.W3 * np.exp(-self.collisions)
+        )
+
     @property
-    def explored_terrain(self)-> float:
-        return np.sum(self.map) / (self.width//10 * self.height//10)
-    
-    
+    def explored_terrain(self) -> float:
+        return np.sum(self.map) / (self.width // 10 * self.height // 10)
+
+
 class PygameEvolvedEnviroment(EnvEvolution):
 
-    def __init__(self, agent: Agent, walls: List[Wall] = [], color="black", landmarks: List[Landmark] = [], height=800, width=800, instants=1000, w1=0.5, w2=0.3, w3=0.2):
-        super().__init__(agent, walls=walls, landmarks=[], height=height, width=width, instants=instants, w1=w1, w2=w2, w3=w3)
+    def __init__(
+        self,
+        agent: Agent,
+        walls: List[Wall] = [],
+        color="black",
+        landmarks: List[Landmark] = [],
+        height=800,
+        width=800,
+        instants=1000,
+        w1=0.5,
+        w2=0.3,
+        w3=0.2,
+    ):
+        super().__init__(
+            agent,
+            walls=walls,
+            landmarks=[],
+            height=height,
+            width=width,
+            instants=instants,
+            w1=w1,
+            w2=w2,
+            w3=w3,
+        )
 
     def show(self, window):
         for wall in self.walls:
@@ -128,16 +173,23 @@ class PygameEvolvedEnviroment(EnvEvolution):
         agent_color = self.agent.color
         # Draw agent
         pygame.draw.circle(window, agent_color, self.agent.pos, self.agent.size)
-        
-        #Draw agent orientation
-        pygame.draw.line(window, "orange", (self.agent.pos[0], self.agent.pos[1]),
-                 (self.agent.pos[0] + 100 * math.cos(angle_from_vector(self.agent.direction_vector)),
-                  self.agent.pos[1] + 100 * math.sin(angle_from_vector(self.agent.direction_vector))), 2)
-        
-        
 
-        #pygame.draw.lines(window, "black", False, self.agent.path, 2)
-        #self.agent.path = self.agent.path[-1000:]
+        # Draw agent orientation
+        pygame.draw.line(
+            window,
+            "orange",
+            (self.agent.pos[0], self.agent.pos[1]),
+            (
+                self.agent.pos[0]
+                + 100 * math.cos(angle_from_vector(self.agent.direction_vector)),
+                self.agent.pos[1]
+                + 100 * math.sin(angle_from_vector(self.agent.direction_vector)),
+            ),
+            2,
+        )
+
+        # pygame.draw.lines(window, "black", False, self.agent.path, 2)
+        # self.agent.path = self.agent.path[-1000:]
 
         # Draw agent direction
         pygame.draw.line(
@@ -153,15 +205,21 @@ class PygameEvolvedEnviroment(EnvEvolution):
 
         # Draw Estimated Path based on the agent direction
         path = []
-        #temp_agent = deepcopy(self.agent)
+        # temp_agent = deepcopy(self.agent)
         # pygame.draw.lines(window, "blue", False, path, width=2)
 
         # Draw landmarks
         for landmark in self.landmarks:
             pygame.draw.circle(window, landmark.color, landmark.pos, landmark.size)
-            #draw landmark positions
-            window.blit(pygame.font.Font(None, 15).render(f"({landmark.pos[0]}, {landmark.pos[1]}), {landmark.signature}", True, "green"), (landmark.pos[0], landmark.pos[1]))
-
+            # draw landmark positions
+            window.blit(
+                pygame.font.Font(None, 15).render(
+                    f"({landmark.pos[0]}, {landmark.pos[1]}), {landmark.signature}",
+                    True,
+                    "green",
+                ),
+                (landmark.pos[0], landmark.pos[1]),
+            )
 
     def draw_sensors(self, window, show_text=False):
         sensor_data = self.get_sensor_data(

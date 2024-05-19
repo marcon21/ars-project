@@ -10,13 +10,52 @@ from evolution import Evolution
 from joblib import Parallel, delayed
 
 
-
 # Parametri
+"""
 fitness_scores = np.zeros(AGENT_NUMBER)
-agents = [EvolvedAgent(x=X_START, y=Y_START, n_sensors=N_SENSORS, controller=NN(N_SENSORS, activation=ACTIVATION), size=AGENT_SIZE, color=AGENT_COLOR, max_distance=MAX_DISTANCE) for _ in range(AGENT_NUMBER)]
-envs = [EnvEvolution(agent, height=HEIGHT, width=WIDTH, instants=INSTANTS, w1=W1, w2=W2, w3=W3) for agent in agents]
-evl = Evolution(initial_population=agents, input_dim=INPUT_SIZE+4, hidden_dim=32, layer_dim=4, output_dim=2)  # Passare alcuni parametri in input, che gestiscono l'evoluzione come la procedura di selezione, crossover e mutazione
-'''
+
+agents = [
+    EvolvedAgent(
+        x=X_START,
+        y=Y_START,
+        n_sensors=N_SENSORS,
+        controller=NN(N_SENSORS, activation=ACTIVATION),
+        size=AGENT_SIZE,
+        color=AGENT_COLOR,
+        max_distance=MAX_DISTANCE,
+    )
+    for _ in range(AGENT_NUMBER)
+]
+envs = [
+    EnvEvolution(
+        agent, height=HEIGHT, width=WIDTH, instants=INSTANTS, w1=W1, w2=W2, w3=W3
+    )
+    for agent in agents
+]
+
+evl = Evolution(
+    initial_population=agents,
+    input_dim=INPUT_SIZE + 4,
+    hidden_dim=32,
+    layer_dim=4,
+    output_dim=2,
+)  # Passare alcuni parametri in input, che gestiscono l'evoluzione come la procedura di selezione, crossover e mutazione
+
+
+"""
+evl = Evolution(
+    initial_population_size=AGENT_NUMBER,
+    input_dim=INPUT_SIZE + 4,
+    hidden_dim=32,
+    layer_dim=4,
+    output_dim=2,
+)
+evl.create_population()
+envs = evl.population
+time = 0
+fitness_scores = np.zeros(AGENT_NUMBER)
+
+
 for env in envs:
     env.load_landmarks(LANDMARK_TXT, LANDMARK_SIZE, LANDMARK_COLOR)
     env.load_walls(WALLS_TXT)
@@ -31,27 +70,23 @@ for generation in range(GENERATIONS):
 
     evl.rank_based_selection(fitness_scores)
     evl.mutation()
-    # evl.crossover()
-'''        
+    evl.crossover()
 
 
-#create population of agents
+"""
 
-
-
-evl = Evolution(initial_population=agents,input_dim=INPUT_SIZE+4,hidden_dim=32,layer_dim=4,output_dim=2)
-time = 0
-
-#initialize the pygame enviroment
+# initialize the pygame enviroment
 pygame.init()
-windows = [pygame.display.set_mode(GAME_RES, HWACCEL | HWSURFACE | DOUBLEBUF) for _ in range(AGENT_NUMBER)]
-envs = [PygameEvolvedEnviroment(agent, height=HEIGHT, width=WIDTH, instants=INSTANTS, w1=W1, w2=W2, w3=W3) for agent in agents]
+windows = [
+    pygame.display.set_mode(GAME_RES, HWACCEL | HWSURFACE | DOUBLEBUF)
+    for _ in range(AGENT_NUMBER)
+]
+
 for env in envs:
     env.load_landmarks(LANDMARK_TXT, LANDMARK_SIZE, LANDMARK_COLOR)
     env.load_walls(WALLS_TXT)
 clock = pygame.time.Clock()
 pygame.display.set_caption(GAME_TITLE)
-
 
 
 pause_state, show_text = False, False
@@ -121,5 +156,4 @@ while True:
 
             pygame.display.flip()
             clock.tick(FPS)
-
-
+"""
