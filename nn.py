@@ -4,18 +4,6 @@ from torch.nn import functional as F
 
 
 class NN(nn.Module):
-    '''
-    Neural network class
-    
-    Attributes:
-        n_sensors: int, number of sensors in the input
-        x1: int, number of neurons in the first hidden layer
-        x2: int, number of neurons in the second hidden layer
-        activation: function, activation function of the hidden layers
-        fc1: nn.Linear, first hidden layer  
-        fc2: nn.Linear, second hidden layer
-        fc3: nn.Linear, output layer
-    '''
     def __init__(self, n_sensors=12, x1=32, x2=4, activation=F.relu):
         super(NN, self).__init__()
         self.fc1 = nn.Linear(n_sensors+x2, x1)

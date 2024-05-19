@@ -117,7 +117,7 @@ class Enviroment:
                     f"{wall.start[0]} {wall.start[1]} {wall.end[0]} {wall.end[1]}\n"
                 )
 
-        print("Walls saved to", filename)
+        #print("Walls saved to", filename)
 
     def load_walls(self, filename):
         self.walls = []
@@ -128,7 +128,7 @@ class Enviroment:
                     Wall(int(wall[0]), int(wall[1]), int(wall[2]), int(wall[3]))
                 )
 
-        print("Walls loaded from", filename)
+        #print("Walls loaded from", filename)
             
     def load_landmarks(self, filename, size, color):
         with open(filename, "r") as f:
