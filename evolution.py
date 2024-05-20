@@ -2,7 +2,7 @@ from env import Enviroment
 from actors import Agent
 from nn import NN
 from evolved_agent import EvolvedAgent
-from env_evolution import PygameEvolvedEnviroment, EnvEvolution
+from env_evolution import EnvEvolution
 from utils import create_pairs
 import math
 import numpy as np
@@ -12,7 +12,6 @@ from parameters import *
 
 # Author: Aurora Pia Ghiardelli
 class Evolution:
-
     def __init__(
         self,
         initial_population_size,
@@ -56,88 +55,64 @@ class Evolution:
         # Perform selection based on the calculated probabilities
         selected_indices = np.random.choice(
             len(sorted_population),
-            size=len(self.population),
+            size=len(self.population) // 2,
             p=probabilities,
             replace=True,
         )
+        # Half the population is selected
+        # selected_indices = selected_indices[: len(selected_indices) // 2]
         self.population = [sorted_population[i] for i in selected_indices]
 
     def mutation(self, mutation_rate=0.5, mean=0, scale=1):
         for env in self.population:
             for i in range(len(env.agent.genome)):
                 if np.random.rand() < mutation_rate:
-                    # Applica una mutazione gaussiana al gene
+                    # Gaussian mutation of the genetic representation of the agent
                     env.agent.genome[i] += np.random.normal(loc=mean, scale=scale)
 
     def crossover(self):
+        pairs = np.random.choice(
+            self.population, size=(self.initial_population_size, 2)
+        )
 
-        pairs = create_pairs(self.population, fertility_rate=0.5)
         new_population = []
-        i = 0
         for pair in pairs:
             parent1, parent2 = pair
-            child1 = EvolvedAgent(
-                x=parent1.agent.pos[0],
-                y=parent1.agent.pos[1],
+            new_genome = self.reproduction(parent1.agent.genome, parent2.agent.genome)
+
+            agent = EvolvedAgent(
+                x=X_START,
+                y=Y_START,
+                n_sensors=N_SENSORS,
                 controller=self.create_model(),
-                move_speed=5,
-                size=40,
-                n_sensors=10,
-                max_distance=200,
-                color="red",
+                size=AGENT_SIZE,
+                color=AGENT_COLOR,
+                max_distance=MAX_DISTANCE,
             )
-
-            env1 = PygameEvolvedEnviroment(child1)
-            child2 = EvolvedAgent(
-                x=parent2.agent.pos[0],
-                y=parent2.agent.pos[1],
-                controller=self.create_model(),
-                move_speed=5,
-                size=40,
-                n_sensors=10,
-                max_distance=200,
-                color="red",
-            )
-
-            env2 = PygameEvolvedEnviroment(child2)
-            gen1 = []
-            gen2 = []
-            for i, (p1, p2, c1, c2) in enumerate(
-                # Crossover between the two parents
-                zip(
-                    parent1.agent.genome,
-                    parent2.agent.genome,
-                    child1.genome,
-                    child2.genome,
-                )
-            ):
-
-                alpha = np.random.rand()  # Random number between 0 and 1
-                c1 = alpha * p1 + (1 - alpha) * p2
-
-                gen1.append(c1)
-                # Linear combination of the two parents' genetic representations
-                c2 = alpha * p2 + (1 - alpha) * p1
-
-                gen2.append(c2)
-            child1.genome = gen1  # Update the genetic representation of the children
-            child2.genome = gen2
-
-            child1.controller.set_weights(
-                gen1
-            )  # Update the weights of the children's neural networks
-            child2.controller.set_weights(gen2)
-            new_population.append(env1)
-            new_population.append(env2)
+            agent.controller.set_weights(new_genome)
+            env = EnvEvolution(agent)
+            new_population.append(env)
 
         self.population = new_population
 
-    def create_model(self):
+    def reproduction(self, gen_a, gen_b):
+        """
+        Reproduction of two agents a and b.
+        """
+        # Create two children with the same genetic representation as the parents
+        assert len(gen_a) == len(gen_b)
+        new_genome = []
 
+        for i in range(len(gen_a)):
+            alpha = np.random.rand()
+            new_genome.append(alpha * gen_a[i] + (1 - alpha) * gen_b[i])
+
+        return new_genome
+
+    def create_model(self):
         return NN(N_SENSORS, activation=ACTIVATION)
 
     def create_genetic_representation(self, model):
-
         representation = []
         for p in model.parameters():
             representation.append(p.data.numpy().flatten())
@@ -146,7 +121,6 @@ class Evolution:
 
     def create_population(self):
         self.population = []
-        # Weights = []
         for i in range(self.initial_population_size):
 
             agent = EvolvedAgent(
@@ -160,65 +134,6 @@ class Evolution:
             )
             # self.env = EnvEvolution(agent, height=self.env.height, width=self.env.width)
             agent.controller.set_weights(agent.controller.get_weights())
-            env = PygameEvolvedEnviroment(agent)
+            env = EnvEvolution(agent)
 
-            """
-            # agent.model.init_hidden()
-            if i == 0:
-                number_par = (
-                    (self.input_dim * self.hidden_dim)
-                    + self.hidden_dim
-                    + (self.hidden_dim * self.hidden_dim)
-                    + self.hidden_dim
-                    + (self.hidden_dim * self.output_dim)
-                    + self.output_dim
-                )
-                weight = np.random.randn(number_par)
-                Weights.append(weight)
-                for n, p in zip(weight, self.agent.model.parameters()):
-                    p.data += torch.FloatTensor(weight)
-
-            else:
-
-                prec_weight = Weights[-1]
-                variance_weights = np.full(number_par, 0.1)
-                weight = np.random.normal(loc=prec_weight, scale=variance_weights)
-                for n, p in zip(weight, self.agent.model.parameters()):
-                    p.data += torch.FloatTensor(weight)
-
-            self.agent.genetic_representation = self.create_genetic_representation(
-                self.agent.model
-            )
-            """
             self.population.append(env)
-
-
-"""
-
-    def train(
-        self, n_generations
-    ):  # Training of the agents// DA SISTEMARE DA CAPIRE COME RESETTARE LÉNVIRONEMENT
-        self.create_population()
-
-        for generation in range(n_generations):
-            
-            for agent in self.population:
-                agent.env.reset()
-                agent.env.
-            self.proportionate_selection()
-            self.crossover()
-            self.mutation()
-            self.env.reset()
-            print(f"Generation {generation} completed")
-            print(
-                f"Best fitness score: {max([agent.fitness_score for agent in self.population])}"
-            )
-            print(f"Best agent: {max(self.population, key=lambda x: x.fitness_score)}")
-            print("--------------------------------------------------")
-        print("Training completed")
-        print(f"Best agent: {max(self.population, key=lambda x: x.fitness_score)}")
-        print(
-            f"Best fitness score: {max([agent.fitness_score for agent in self.population])}"
-        )
-
-"""

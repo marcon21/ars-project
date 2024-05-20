@@ -18,8 +18,5 @@ class EvolvedAgent(Agent):
         super().__init__(x, y, move_speed, size, n_sensors, max_distance, color)
         self.controller = controller
         self.genome = self.controller.get_weights()
-        # self.terrain_explored = None
         self.min_distance = math.inf
         self.number_obstacles = 0
-
-        # self.fitness_score = -1

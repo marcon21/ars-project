@@ -12,7 +12,6 @@ import torch
 
 
 class EnvEvolution(Enviroment):
-
     def __init__(
         self,
         agent: EvolvedAgent,
@@ -57,22 +56,26 @@ class EnvEvolution(Enviroment):
 
     def think(self):
         # Update terrain explored
-        self.map[
-            round(self.agent.pos[0]) // 10 - 1, round(self.agent.pos[1]) // 10 - 1
-        ] = 1
+        try:
+            self.map[
+                round(self.agent.pos[0]) // 10 - 1, round(self.agent.pos[1]) // 10 - 1
+            ] = 1
 
-        # Get sensor data
-        sensor_data = self.get_sensor_data(
-            self.agent.n_sensors, self.agent.max_distance
-        )
+            # Get sensor data
+            sensor_data = self.get_sensor_data(
+                self.agent.n_sensors, self.agent.max_distance
+            )
 
-        # Calculate mean distance and count collisions
-        distances = np.array([data[1][0] for data in sensor_data], dtype=np.float32)
-        mean_distance = np.mean(distances)
-        self.distance[self.movements] = mean_distance
-        self.collisions += np.sum(distances <= 0)
+            # Calculate mean distance and count collisions
+            distances = np.array([data[1][0] for data in sensor_data], dtype=np.float32)
+            mean_distance = np.mean(distances)
+            self.distance[self.movements] = mean_distance
+            self.collisions += np.sum(distances <= 0)
+            vl, vr = self.agent.controller.forward(torch.tensor(distances))
+        except Exception as e:
+            # print(e)
+            vl, vr = 0, 0
 
-        vl, vr = self.agent.controller.forward(torch.tensor(distances))
         return vl, vr
 
     def move_agent(self, dt=1 / 60):
@@ -80,8 +83,8 @@ class EnvEvolution(Enviroment):
         ds = dt * (vl + vr) / 2
         dx, dy = np.cos(ds), np.sin(ds)
         dtheta = dt * (vr - vl) / self.agent.size
-        move_vector = self.agent.direction_vector + np.array([round(dx), round(dy)])
-        """
+        move_vector = self.agent.direction_vector + np.array([dx, dy])
+
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
 
@@ -107,7 +110,7 @@ class EnvEvolution(Enviroment):
                 if np.dot(self.agent.direction_vector, -wall_to_agent) > 0:
                     # If the agent is moving towards the wall only consider the parallel component
                     move_vector = parallel_component
-        
+
         # Check if the agent is making an illegal move
         for wall in self.walls:
             intersection_point = intersection(
@@ -120,9 +123,9 @@ class EnvEvolution(Enviroment):
                 wall,
             )
             if intersection_point:
-                print("ILLEGAL MOVE")
+                # print("ILLEGAL MOVE")
                 return
-        """
+
         self.agent.apply_vector(move_vector)
         self.agent.rotate(dtheta)
         self.movements += 1

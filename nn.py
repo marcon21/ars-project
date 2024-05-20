@@ -1,6 +1,7 @@
 from torch import nn
 import torch
 from torch.nn import functional as F
+from copy import deepcopy
 
 
 class NN(nn.Module):
@@ -9,6 +10,7 @@ class NN(nn.Module):
         self.fc1 = nn.Linear(n_sensors + x2, x1)
         self.fc2 = nn.Linear(x1, x2)
         self.fc3 = nn.Linear(x2, 2)
+
         self.state = torch.zeros(x2)
         self.activation = activation
 
@@ -16,21 +18,14 @@ class NN(nn.Module):
         """
         Forward pass of the network
         """
-        if not isinstance(x, torch.Tensor):
-            raise ValueError("Input should be a torch.Tensor")
-        # Ensure state is on the same device and dtype as x
-        self.state = self.state.to(x.device).type(x.dtype)
-
-        # Concatenate input x with state
         x = torch.cat((x, self.state), dim=-1)
-
         x = self.activation(self.fc1(x))
         x = self.activation(self.fc2(x))
 
         # Update state with the output of fc2 layer
-        self.state = x
-
+        self.state = x.clone()
         x = self.activation(self.fc3(x))
+
         vr = x[0].item()
         vl = x[1].item()
         return vr, vl
