@@ -14,6 +14,7 @@ class EvolvedAgent(Agent):
         max_distance=200,
         color="red",
         controller: NN = None,
+        
     ) -> None:
         super().__init__(x, y, move_speed, size, n_sensors, max_distance, color)
         self.controller = controller

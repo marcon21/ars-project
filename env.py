@@ -70,6 +70,7 @@ class Enviroment:
         self.agent.apply_vector(move_vector)
         self.agent.rotate(self.agent.turn_direction / 10)
 
+
     def get_sensor_data(self, n_sensors=8, max_distance=200):
         sensor_data = []
         position = self.agent.pos

@@ -190,6 +190,7 @@ class Evolution:
                 self.agent.model
             )
             """
+            
             self.population.append(env)
 
 
