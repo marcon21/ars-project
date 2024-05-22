@@ -23,7 +23,8 @@ if __name__ == "__main__":
     # Initialize Evolution
     import torch
 
-    mp.set_start_method("fork")
+    mp.set_start_method("spawn")
+
     multiprocessing = True
 
     evl = Evolution(
@@ -32,6 +33,8 @@ if __name__ == "__main__":
         hidden_dim=32,
         layer_dim=4,
         output_dim=2,
+        mutation_rate=0.1,
+        elitism_rate=0.1,
     )
     evl.create_population()
 
@@ -46,6 +49,7 @@ if __name__ == "__main__":
         env.load_walls(WALLS_TXT)
 
     # Simulation for each generation
+
     for generation in range(GENERATIONS):
         print(f"Generation {generation} - Simulating...")
 
@@ -84,6 +88,13 @@ if __name__ == "__main__":
         print(
             f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)}"
         )
+        if generation == 0:
+            with open("./saves/average_fitness_scores.txt", "w") as f:
+                f.write(
+                    f"Generation: {generation} ~ Average Fitness: {np.mean(fitness_scores)} ~ std: {np.std(fitness_scores)} \n"
+                )
+            with open("./saves/fitness_scores.txt", "w") as f:
+                f.write(f"Generation: {generation} ~ Fitness: {fitness_scores}\n")
 
         with open("./saves/fitness_scores.txt", "w") as f:
             f.write(
@@ -100,7 +111,7 @@ if __name__ == "__main__":
         # Evolution steps
         evl.rank_based_selection(fitness_scores)
         evl.crossover()
-        evl.mutation()
+        # evl.mutation()
 
     # Save best agent
 
