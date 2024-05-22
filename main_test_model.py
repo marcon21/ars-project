@@ -7,7 +7,8 @@ from random import randint
 from random import random as rand
 from env_evolution import EnvEvolution, PygameEvolvedEnviroment
 from evolved_agent import EvolvedAgent
-import pickle
+import torch
+from nn import NN
 
 # Pygame setup
 pygame.init()
@@ -16,8 +17,23 @@ clock = pygame.time.Clock()
 dt = 0
 pygame.display.set_caption(GAME_TITLE)
 
-env = pickle.load(open("./saves/best_agent.pkl", "rb"))
-env = PygameEvolvedEnviroment(agent=env.agent, walls=env.walls)
+model = NN(INPUT_SIZE, HIDDEN_SIZE, HIDDEN_SIZE2, OUTPUT_SIZE)
+model.load_state_dict(torch.load("./saves/best_last_agent.pth"))
+agent = EvolvedAgent(
+    x=X_START,
+    y=Y_START,
+    size=AGENT_SIZE,
+    move_speed=30,
+    n_sensors=INPUT_SIZE,
+    max_distance=MAX_DISTANCE,
+    color=AGENT_COLOR,
+    controller=model,
+)
+
+
+env = PygameEvolvedEnviroment(agent=agent)
+env.load_landmarks(LANDMARK_TXT, LANDMARK_SIZE, LANDMARK_COLOR)
+env.load_walls(WALLS_TXT)
 
 while True:
     window.fill(SCREEN_COLOR)

@@ -122,7 +122,6 @@ class Evolution:
     def create_population(self):
         self.population = []
         for i in range(self.initial_population_size):
-
             agent = EvolvedAgent(
                 x=X_START,
                 y=Y_START,
@@ -133,7 +132,7 @@ class Evolution:
                 max_distance=MAX_DISTANCE,
             )
             # self.env = EnvEvolution(agent, height=self.env.height, width=self.env.width)
-            agent.controller.set_weights(agent.controller.get_weights())
+            # agent.controller.set_weights(agent.controller.get_weights())
             env = EnvEvolution(agent)
 
             self.population.append(env)

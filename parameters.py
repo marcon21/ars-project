@@ -6,7 +6,7 @@ from torch.nn import functional as F
 # Author: Enrico Cavinato
 
 # agent specifics
-AGENT_NUMBER = 20
+AGENT_NUMBER = 10
 X_START, Y_START = 350.0, 300.0
 N_SENSORS, MAX_DISTANCE = 12, 200
 AGENT_SIZE, AGENT_COLOR = 10, "orange"
@@ -26,7 +26,7 @@ GAME_TITLE, SCREEN_COLOR = "SELF NAVIGATION", "white"
 
 
 # evolution specifics
-GENERATIONS = 20
+GENERATIONS = 10
 INPUT_SIZE = 12
 HIDDEN_SIZE = 32
 HIDDEN_SIZE2 = 4

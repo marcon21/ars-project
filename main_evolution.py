@@ -21,6 +21,7 @@ def run_simulation(env, i, fitness_scores):
 
 if __name__ == "__main__":
     # Initialize Evolution
+    import torch
 
     mp.set_start_method("fork")
     multiprocessing = True
@@ -48,6 +49,15 @@ if __name__ == "__main__":
     for generation in range(GENERATIONS):
         print(f"Generation {generation} - Simulating...")
 
+        # random start location
+        delta_x = 300
+        delta_y = 300
+        new_x = X_START + np.random.randint(-delta_x, delta_x)
+        new_y = Y_START + np.random.randint(-delta_y, delta_y)
+        for env in evl.population:
+            env.agent.x = new_x
+            env.agent.y = new_y
+
         # Using shared array for multiprocessing
         if multiprocessing:
             fitness_scores = mp.Array("d", AGENT_NUMBER)
@@ -72,11 +82,20 @@ if __name__ == "__main__":
                 run_simulation(env, i, fitness_scores)
 
         print(
-            f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)}"
+            f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)}"
         )
 
         with open("./saves/fitness_scores.txt", "w") as f:
-            f.write(f"Generation: {generation} ~ Fitness: {np.mean(fitness_scores)}\n")
+            f.write(
+                f"Generation: {generation} ~ Fitness: {np.mean(fitness_scores)} ~ Best Fitness {np.max(fitness_scores)}\n"
+            )
+
+        best_agent = evl.population[np.argmax(fitness_scores)]
+        model = best_agent.agent.controller
+        torch.save(
+            model.state_dict(),
+            f"./saves/all/gen-{generation}_fit-{round(np.argmax(fitness_scores))}.pth",
+        )
 
         # Evolution steps
         evl.rank_based_selection(fitness_scores)
@@ -84,6 +103,7 @@ if __name__ == "__main__":
         evl.mutation()
 
     # Save best agent
+
     best_agent = evl.population[np.argmax(fitness_scores)]
-    with open("./saves/best_agent.pkl", "wb") as f:
-        pickle.dump(best_agent, f)
+    model = best_agent.agent.controller
+    torch.save(model.state_dict(), "./saves/best_last_agent.pth")
