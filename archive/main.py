@@ -11,10 +11,9 @@ from math import pi, degrees, atan2
 import numpy as np
 from random import randint
 from random import random as rand
-from parameters import *
+from archive.parameters import *
 
-
-# Author: Enrico Cavinato
+#Author: Enrico Cavinato
 def reset_agent():
     agent.pos = (window.get_width() / 2, window.get_height() / 2)
     agent.direction_vector = np.array([1, 0])
@@ -143,6 +142,7 @@ def draw_legend():
 
 
 while True:
+
     with open("./data/output.txt", "a") as file:
         window.fill(SCREEN_COLOR)
 

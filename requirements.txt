@@ -4,3 +4,4 @@ pygame_widgets==1.0.0
 tabulate
 matplotlib
 scipy
+torch

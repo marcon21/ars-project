@@ -6,7 +6,7 @@ from math import sin, cos, radians, degrees, sqrt
 from pygame.locals import *
 from utils import angle_from_vector
 from numpy.random import multivariate_normal
-from parameters import TRAJ
+from archive.parameters import TRAJ
 
 #Authors: Aurora Pia Ghiardelli, Daniel Marcon, Enrico Cavinato
 class Kalman_Filter:
