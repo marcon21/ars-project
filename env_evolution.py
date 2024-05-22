@@ -70,7 +70,7 @@ class EnvEvolution(Enviroment):
             distances = np.array([data[1][0] for data in sensor_data], dtype=np.float32)
             min_distance = np.minimum(distances)
             self.distance[self.movements] = min_distance
-            self.collisions += np.sum(distances <= 0)
+            self.collisions += np.sum(distances <= self.agent.size)
             vl, vr = self.agent.controller.forward(torch.tensor(distances))
         except Exception as e:
             # print(e)
