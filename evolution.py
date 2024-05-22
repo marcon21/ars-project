@@ -7,6 +7,7 @@ from utils import create_pairs
 import math
 import numpy as np
 import torch
+import random
 from parameters import *
 
 
@@ -19,12 +20,16 @@ class Evolution:
         hidden_dim,
         layer_dim,
         output_dim,
+        mutation_rate=0.1,
+        elitism_rate=0.1,
     ):
         self.initial_population_size = initial_population_size
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.layer_dim = layer_dim
         self.output_dim = output_dim
+        self.mutation_rate = mutation_rate
+        self.elitism = int(initial_population_size * elitism_rate)
 
     def proportionate_selection(
         self, fitness_scores
@@ -42,10 +47,14 @@ class Evolution:
         """
         # Combine agents with their fitness scores and sort them
         populations_scores = list(zip(self.population, fitness_scores))
-        sorted_population = sorted(populations_scores, key=lambda x: x[1], reverse=True)
+        self.sorted_population_with_scores = sorted(
+            populations_scores, key=lambda x: x[1], reverse=True
+        )
 
         # Extract the sorted population and fitness scores
-        sorted_population, sorted_fitness_scores = zip(*sorted_population)
+        sorted_population, sorted_fitness_scores = zip(
+            *self.sorted_population_with_scores
+        )
 
         # Calculate rank-based probabilities
         ranks = np.arange(1, len(sorted_population) + 1)
@@ -55,7 +64,7 @@ class Evolution:
         # Perform selection based on the calculated probabilities
         selected_indices = np.random.choice(
             len(sorted_population),
-            size=len(self.population) // 2,
+            size=len(self.population),
             p=probabilities,
             replace=True,
         )
@@ -63,21 +72,29 @@ class Evolution:
         # selected_indices = selected_indices[: len(selected_indices) // 2]
         self.population = [sorted_population[i] for i in selected_indices]
 
-    def mutation(self, mutation_rate=0.5, mean=0, scale=1):
-        for env in self.population:
-            for i in range(len(env.agent.genome)):
-                if np.random.rand() < mutation_rate:
-                    # Gaussian mutation of the genetic representation of the agent
-                    env.agent.genome[i] += np.random.normal(loc=mean, scale=scale)
-
-    def crossover(self):
-        pairs = np.random.choice(
-            self.population, size=(self.initial_population_size, 2)
+    def choose_parents(self):
+        # Extract the sorted population and fitness scores
+        sorted_population, sorted_fitness_scores = zip(
+            *self.sorted_population_with_scores
         )
 
+        fittest = sorted_population[-self.elitism :]
+        return random.choice(fittest)
+
+    def mutation(self, genome):
+        for i in range(len(genome)):
+            if np.random.rand() < self.mutation_rate:
+                # Gaussian mutation of the genetic representation of the agent
+                genome[i] += np.random.normal(loc=0, scale=1)
+
+        return genome
+
+    def crossover(self):
+
         new_population = []
-        for pair in pairs:
-            parent1, parent2 = pair
+        for _ in range(len(self.population)):
+            parent1 = self.choose_parents()
+            parent2 = self.choose_parents()
             new_genome = self.reproduction(parent1.agent.genome, parent2.agent.genome)
 
             agent = EvolvedAgent(
@@ -106,7 +123,7 @@ class Evolution:
         for i in range(len(gen_a)):
             alpha = np.random.rand()
             new_genome.append(alpha * gen_a[i] + (1 - alpha) * gen_b[i])
-
+        new_genome = self.mutation(new_genome)
         return new_genome
 
     def create_model(self):

@@ -1,0 +1,5 @@
+Generation: 0 ~ Average Fitness: 0.22062500000000002 ~ std: 0.0 
+Generation: 1 ~ Fitness: 0.283125~ std: 0.0
+Generation: 2 ~ Fitness: 0.283125~ std: 0.0
+Generation: 3 ~ Fitness: 0.283125~ std: 0.0
+Generation: 4 ~ Fitness: 0.283125~ std: 0.0

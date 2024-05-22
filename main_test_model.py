@@ -18,7 +18,8 @@ pygame.display.set_caption(GAME_TITLE)
 
 env = pickle.load(open("./saves/best_agent.pkl", "rb"))
 env = PygameEvolvedEnviroment(agent=env.agent, walls=env.walls)
-
+env.load_landmarks(LANDMARK_TXT, LANDMARK_SIZE, LANDMARK_COLOR)
+env.load_walls(WALLS_TXT)
 while True:
     window.fill(SCREEN_COLOR)
 

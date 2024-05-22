@@ -20,8 +20,8 @@ class EnvEvolution(Enviroment):
         height=800,
         width=800,
         instants=1000,
-        w1=0.5,
-        w2=0.3,
+        w1=1,
+        w2=1,
         w3=0.2,
     ):
         super().__init__(agent, walls, landmarks)
@@ -51,14 +51,14 @@ class EnvEvolution(Enviroment):
             )
         self.collisions = 0
         self.movements = 0
-        self.map = np.zeros((self.width // 10, self.height // 10))
+        self.map = np.zeros((self.width // 100, self.height // 100))
         self.distance = self.agent.max_distance * np.ones(self.instants)
 
     def think(self):
         # Update terrain explored
         try:
             self.map[
-                round(self.agent.pos[0]) // 10 - 1, round(self.agent.pos[1]) // 10 - 1
+                round(self.agent.pos[0]) // 100 - 1, round(self.agent.pos[1]) // 100 - 1
             ] = 1
 
             # Get sensor data
@@ -68,8 +68,8 @@ class EnvEvolution(Enviroment):
 
             # Calculate mean distance and count collisions
             distances = np.array([data[1][0] for data in sensor_data], dtype=np.float32)
-            mean_distance = np.mean(distances)
-            self.distance[self.movements] = mean_distance
+            min_distance = np.minimum(distances)
+            self.distance[self.movements] = min_distance
             self.collisions += np.sum(distances <= 0)
             vl, vr = self.agent.controller.forward(torch.tensor(distances))
         except Exception as e:
@@ -133,13 +133,13 @@ class EnvEvolution(Enviroment):
     def fitness_score(self) -> float:
         return (
             self.W1 * self.explored_terrain
-            + self.W2 * np.mean(self.distance)
+            + self.W2 * np.mean(1 / self.distance)
             + self.W3 * np.exp(-self.collisions)
         )
 
     @property
     def explored_terrain(self) -> float:
-        return np.sum(self.map) / (self.width // 10 * self.height // 10)
+        return np.sum(self.map) / (self.width // 100 * self.height // 100)
 
 
 class PygameEvolvedEnviroment(EnvEvolution):
