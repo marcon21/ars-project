@@ -23,7 +23,7 @@ if __name__ == "__main__":
     # Initialize Evolution
     import torch
 
-    mp.set_start_method("spawn")
+    mp.set_start_method("fork")
 
     multiprocessing = True
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         # Evolution steps
         evl.rank_based_selection(fitness_scores)
         evl.crossover()
-        # evl.mutation()
+        evl.mutation()
 
     # Save best agent
 
