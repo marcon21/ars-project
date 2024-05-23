@@ -10,7 +10,6 @@ from utils import distance_from_wall, intersection, angle_from_vector
 import math
 import torch
 
-
 class EnvEvolution(Enviroment):
     def __init__(
         self,
@@ -27,7 +26,7 @@ class EnvEvolution(Enviroment):
         super().__init__(agent, walls, landmarks)
         self.height = height
         self.width = width
-        self.map = np.zeros((self.width // 10, self.height // 10))
+        self.map = np.zeros((self.width, self.height ))
         self.collisions = 0
         self.movements = 0
         self.instants = instants
@@ -36,23 +35,24 @@ class EnvEvolution(Enviroment):
         self.W3 = w3
         self.distance = self.agent.max_distance * np.ones(self.instants)
 
+
     def reset(self, random=False):
-        if random:
-            self.agent.pos = np.array(
-                [np.random.randint(0, self.width), np.random.randint(0, self.height)],
-                dtype=np.float64,
-            )
-            self.agent.direction_vector = np.array(
-                [np.random.randint(-1, 2), np.random.randint(-1, 2)], dtype=np.float64
-            )
-        else:
-            self.agent.pos = np.array(
-                [self.width // 2, self.height // 2], dtype=np.float64
-            )
-        self.collisions = 0
-        self.movements = 0
-        self.map = np.zeros((self.width // 100, self.height // 100))
-        self.distance = self.agent.max_distance * np.ones(self.instants)
+            if random:
+                self.agent.pos = np.array(
+                    [np.random.randint(0, self.width), np.random.randint(0, self.height)],
+                    dtype=np.float64,
+                )
+                self.agent.direction_vector = np.array(
+                    [np.random.randint(-1, 2), np.random.randint(-1, 2)], dtype=np.float64
+                )
+            else:
+                self.agent.pos = np.array(
+                    [self.width // 2, self.height // 2], dtype=np.float64
+                )
+            self.collisions = 0
+            self.movements = 0
+            self.map = np.zeros((self.width, self.height))
+            self.distance = self.agent.max_distance * np.ones(self.instants)
 
     def think(self):
         # Update terrain explored
@@ -79,11 +79,26 @@ class EnvEvolution(Enviroment):
         return vl, vr
 
     def move_agent(self, dt=1 / 60):
-        vl, vr = self.think()
-        ds = dt * (vl + vr) / 2
-        dx, dy = np.cos(ds), np.sin(ds)
-        dtheta = dt * (vr - vl) / self.agent.size
-        move_vector = self.agent.direction_vector + np.array([dx, dy])
+        try:
+            sensor_data = self.get_sensor_data(self.agent.n_sensors, self.agent.max_distance)
+            distances = np.array([data[1][0] for data in sensor_data], dtype=np.float32)
+            vl, vr = self.agent.controller.forward(torch.tensor(distances))
+        except Exception as e:
+            # print(e)
+            vl, vr = 0, 0
+        
+        v = (vl + vr) / 2
+        w = (vr - vl) / (self.agent.size * 2)
+        dtheta = w * dt
+        if w == 0: 
+            dx,dy = v * dt * np.cos(self.agent.direction), v * dt * np.sin(self.agent.direction)
+        else:
+            R = v / w
+            dx = round(R * (np.sin(self.agent.direction + dtheta) - np.sin(self.agent.direction)))
+            dy = round(-R * (np.cos(self.agent.direction + dtheta) - np.cos(self.agent.direction)))
+            print("")
+
+        move_vector =  np.array([dx, dy])
 
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
@@ -93,6 +108,7 @@ class EnvEvolution(Enviroment):
                 wall_vector = np.array(
                     [wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]]
                 )
+                self.collisions += 1
                 wall_vector = wall_vector / np.linalg.norm(wall_vector)
 
                 # Vector of the agent parallel to the wall
@@ -129,6 +145,7 @@ class EnvEvolution(Enviroment):
         self.agent.apply_vector(move_vector)
         self.agent.rotate(dtheta)
         self.movements += 1
+        self.map[self.agent.pos[0], self.agent.pos[1]] = 1
 
     def fitness_score(self) -> float:
         return (

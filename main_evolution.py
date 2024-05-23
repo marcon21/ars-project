@@ -111,7 +111,7 @@ if __name__ == "__main__":
         # Evolution steps
         evl.rank_based_selection(fitness_scores)
         evl.crossover()
-        evl.mutation()
+        #evl.mutation()
 
     # Save best agent
 
