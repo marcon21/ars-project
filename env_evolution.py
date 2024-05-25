@@ -41,6 +41,7 @@ class EnvEvolution(Enviroment):
         self.distance = self.agent.max_distance * np.ones(self.instants)
         self.path = []
         self.map = np.zeros((self.width, self.height))
+        self.w = []
 
     def reset(self, random=False):
         if random:
@@ -68,6 +69,9 @@ class EnvEvolution(Enviroment):
             print(e)
             vl, vr = 0, 0
         v, w = (vl + vr) / 2, (vr - vl) / (self.agent.size * 2)
+        #print(f"v: {v}, w: {w}", "vl", vl, "vr", vr)   
+        if np.isnan(v) or np.isnan(w):
+            exit()
         self.ang.append(w)
         dx,dy, dtheta = 0,0, w * dt
         if w == 0:
@@ -78,38 +82,35 @@ class EnvEvolution(Enviroment):
             dx = R * (np.sin(self.agent.direction + dtheta) - np.sin(self.agent.direction))
             dy = -R * (np.cos(self.agent.direction + dtheta) - np.cos(self.agent.direction))
 
-        dx = np.clip(dx, -10, 10)
-        dy = np.clip(dy, -10, 10)
-        move_vector = np.array([dx, dy])
-        if move_vector[0] == 0 and move_vector[1] == 0:
-            return
+        dx = np.clip(dx, -20, 20)
+        dy = np.clip(dy, -20, 20)
+        
+        x,y = self.agent.pos
+        new_x, new_y = x + dx, y + dy
         for wall in self.walls:
-            current_d = distance_from_wall(wall, self.agent.pos)
-
-            if current_d <= self.agent.size:
-                # Vector of the wall direction
-                self.collisions += 1
-                wall_vector = np.array(
-                    [wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]]
-                )
-                wall_vector = wall_vector / np.linalg.norm(wall_vector)
-
-                # Vector of the agent parallel to the wall
-                parallel_component = np.dot(wall_vector, move_vector) * wall_vector
-
-                # Vector of the agent perpendicular to the wall
-                wall_to_agent = self.agent.pos - np.array(
-                    distance_from_wall(wall, self.agent.pos, coords=True)
-                )
-                wall_to_agent = wall_to_agent / np.linalg.norm(wall_to_agent)
-
-                # If the agent is inside the wall push it out
-                self.agent.apply_vector(wall_to_agent * (self.agent.size - current_d))
-                # Check if the agent is moving towards the wall
-                if np.dot(self.agent.direction_vector, -wall_to_agent) > 0:
-                    # If the agent is moving towards the wall only consider the parallel component
-                    move_vector = parallel_component
-
+            x1,y1,x2,y2 = wall.start[0], wall.start[1], wall.end[0], wall.end[1]
+            # vertical wall
+            if x1 == x2:
+                if dx > 0:
+                    if new_x > x1 and x < x1:
+                        self.collisions += 1
+                        dx = x1 - x - self.agent.size
+                if dx < 0:
+                    if new_x < x1 and x > x1:
+                        dx = x1 - x + self.agent.size
+                        self.collisions += 1
+            # vertical wall
+            if y1 == y2:
+                if dy > 0:
+                    if new_y > y1 and y <y1:
+                        dy = y1 - y - self.agent.size
+                        self.collisions += 1
+                if dy < 0:
+                    if new_y < y1 and y > y1:
+                        dy = y1 - y + self.agent.size
+                        self.collisions += 1
+                        
+        move_vector = np.array([dx, dy])
         # Check if the agent is making an illegal move
         for wall in self.walls:
             intersection_point = intersection(
@@ -145,12 +146,11 @@ class EnvEvolution(Enviroment):
         self.agent.rotate(np.deg2rad(dtheta))
 
     def fitness_score(self) -> float:
-        
-        return (
-            self.explored_terrain * 100 - sum(self.ang) / len(self.ang)
-            #np.mean(1 / self.distance)
-            #+ np.exp(-self.collisions)
-        )
+        #mean_angular_velocity = np.mean(np.abs(self.w))
+        #print(f"Mean Angular Velocity: {mean_angular_velocity}")
+        if self.collisions == 0:
+            return self.explored_terrain #- mean_angular_velocity
+        return self.explored_terrain #+ 1 / self.collisions - mean_angular_velocity
     @property
     def explored_terrain(self) -> float:
         return np.sum(self.map) / (self.width * self.height)
