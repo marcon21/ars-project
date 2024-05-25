@@ -56,9 +56,11 @@ class Agent:
 
     def move(self):
         self.apply_vector(self.direction_vector * self.move_speed)
-
+        
     def apply_vector(self, vector):
-        x,y = round(vector[0]), round(vector[1])  
-        vector = np.array([x, y])  
+        if np.isnan(vector[0]) and np.isnan(vector[1]):
+            return
+        x, y = round(vector[0]), round(vector[1])
+        vector = np.array([x, y])
         self.pos += vector
         self.path.append(tuple(self.pos))
