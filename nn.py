@@ -25,7 +25,7 @@ class NN(nn.Module):
         # Update state with the output of fc2 layer
         self.state = x.clone()
         x = self.activation(self.fc3(x))
-
+        x = F.softmax(x, dim=-1)
         vr = x[0].item()
         vl = x[1].item()
         return vr, vl
