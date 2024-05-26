@@ -46,32 +46,42 @@ class Evolution:
         """
         Selection of the agents based on their fitness score with the rank-based selection method.
         """
-        # Combine agents with their fitness scores and sort them
+        # # Combine agents with their fitness scores and sort them
+        # populations_scores = list(zip(self.population, fitness_scores))
+        # self.sorted_population_with_scores = sorted(
+        #     populations_scores, key=lambda x: x[1], reverse=True
+        # )
+
+        # print("highest fitness score: ", self.sorted_population_with_scores[0])
+        # print("lowest fitness score: ", self.sorted_population_with_scores[-1])
+
+        # # Extract the sorted population and fitness scores
+        # sorted_population, sorted_fitness_scores = zip(
+        #     *self.sorted_population_with_scores
+        # )
+
+        # # Calculate rank-based probabilities
+        # ranks = np.arange(1, len(sorted_population) + 1)
+        # probabilities = 1 / ranks
+        # probabilities /= np.sum(probabilities)
+
+        # # Perform selection based on the calculated probabilities
+        # selected_indices = np.random.choice(
+        #     len(sorted_population),
+        #     size=len(self.population),
+        #     p=probabilities,
+        #     replace=True,
+        # )
+        # # Half the population is selected
+        # # selected_indices = selected_indices[: len(selected_indices) // 2]
+        # self.population = [sorted_population[i] for i in selected_indices]
+
         populations_scores = list(zip(self.population, fitness_scores))
-        self.sorted_population_with_scores = sorted(
-            populations_scores, key=lambda x: x[1], reverse=True
-        )
+        sorted_population = sorted(populations_scores, key=lambda x: x[1], reverse=True)
 
         # Extract the sorted population and fitness scores
-        sorted_population, sorted_fitness_scores = zip(
-            *self.sorted_population_with_scores
-        )
-
-        # Calculate rank-based probabilities
-        ranks = np.arange(1, len(sorted_population) + 1)
-        probabilities = 1 / ranks
-        probabilities /= np.sum(probabilities)
-
-        # Perform selection based on the calculated probabilities
-        selected_indices = np.random.choice(
-            len(sorted_population),
-            size=len(self.population),
-            p=probabilities,
-            replace=True,
-        )
-        # Half the population is selected
-        # selected_indices = selected_indices[: len(selected_indices) // 2]
-        self.population = [sorted_population[i] for i in selected_indices]
+        sorted_population, sorted_fitness_scores = zip(*sorted_population)
+        self.population = sorted_population[: len(sorted_population) // 8]
 
     def choose_parents(self):
         # Extract the sorted population and fitness scores
@@ -85,18 +95,42 @@ class Evolution:
     def mutation(self, genome):
         for k in genome:
             if "weight" in k or "bias" in k:
-                noise = torch.randn_like(genome[k]) * self.mutation_rate
-                # Gaussian mutation of the genetic representation of the agent
+                noise = np.random.normal(0, self.mutation_rate, genome[k].shape)
                 genome[k] += noise
 
         return genome
 
     def crossover(self):
-        new_population = []
-        for _ in range(len(self.population)):
-            parent1 = self.choose_parents()
-            parent2 = self.choose_parents()
+        # new_population = []
+        # for _ in range(len(self.population)):
+        #     parent1 = self.choose_parents()
+        #     parent2 = self.choose_parents()
+        #     new_genome = self.reproduction(parent1.agent.genome, parent2.agent.genome)
+
+        #     agent = EvolvedAgent(
+        #         x=X_START,
+        #         y=Y_START,
+        #         n_sensors=N_SENSORS,
+        #         controller=self.create_model(),
+        #         size=AGENT_SIZE,
+        #         color=AGENT_COLOR,
+        #         max_distance=MAX_DISTANCE,
+        #     )
+        #     agent.controller.set_weights(new_genome)
+        #     env = EnvEvolution(agent)
+        #     new_population.append(env)
+
+        # self.population = new_population
+
+        pairs = np.random.choice(
+            self.population, size=(self.initial_population_size - 2, 2)
+        )
+
+        new_population = [self.population[0], self.population[1]]
+        for pair in pairs:
+            parent1, parent2 = pair
             new_genome = self.reproduction(parent1.agent.genome, parent2.agent.genome)
+            new_genome = self.mutation(new_genome)
 
             agent = EvolvedAgent(
                 x=X_START,
@@ -119,12 +153,12 @@ class Evolution:
         """
         # Create two children with the same genetic representation as the parents
         assert len(gen_a) == len(gen_b)
-        new_genome = {}
+        new_genome = deepcopy(gen_a)
 
         for k in gen_a:
-            alpha = np.random.rand()
-            # new_genome[k] = alpha * a[i] + (1 - alpha) * b[i]
-            new_genome[k] = gen_a[k] * alpha + gen_b[k] * (1 - alpha)
+            if "weight" in k or "bias" in k:
+                alpha = np.random.rand()
+                new_genome[k] = gen_a[k] * alpha + gen_b[k] * (1 - alpha)
 
         new_genome = self.mutation(new_genome)
 

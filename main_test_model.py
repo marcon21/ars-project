@@ -22,10 +22,15 @@ pygame.display.set_caption(GAME_TITLE)
 model = NN(INPUT_SIZE, HIDDEN_SIZE, HIDDEN_SIZE2, OUTPUT_SIZE)
 model.load_state_dict(torch.load("./saves/best_last_agent.pth"))
 
+delta_x = 300
+delta_y = 300
+new_x = X_START + np.random.randint(-delta_x, delta_x)
+new_y = Y_START + np.random.randint(-delta_y, delta_y)
+
 # Create agent instance
 agent = EvolvedAgent(
-    x=120,
-    y=100,
+    x=new_x,
+    y=new_y,
     size=AGENT_SIZE,
     move_speed=30,
     n_sensors=INPUT_SIZE,
@@ -34,8 +39,18 @@ agent = EvolvedAgent(
     controller=model,
 )
 
+
 # Create environment instance
-env = PygameEvolvedEnviroment(agent=agent)
+env = PygameEvolvedEnviroment(
+    agent=agent,
+    instants=INSTANTS,
+    grid_size=10,
+    height=HEIGHT,
+    width=WIDTH,
+    w1=W1,
+    w2=W2,
+    w3=W3,
+)
 # Load walls or landmarks if necessary
 env.load_walls(WALLS_TXT)
 
@@ -54,7 +69,14 @@ while True:
 
     # Update agent and display environment
     env.move_agent()
+
     env.show(window)
+
+    for el in env.visited.keys():
+        pygame.draw.circle(window, (0, 0, 255), np.array(el) * 10, 2)
+
     pygame.display.flip()
+
+    # print(env.explored_terrain, framecount)
 
     dt = clock.tick(FPS) / 1000

@@ -14,14 +14,9 @@ import pickle
 
 def run_simulation(env, i, fitness_scores):
     env.reset()
-    intial = env.agent.pos.copy()
     for _ in range(INSTANTS):
-        # if i == 20 and env.agent.pos[0] == intial[0] and env.agent.pos[1] == intial[1]:
-        #     fitness_scores[i] = 0
-        #     break
         env.move_agent()
 
-    # print(len(fitness_scores), i)
     fitness_scores[i] = env.fitness_score()
 
 
@@ -49,29 +44,25 @@ if __name__ == "__main__":
     print("Number of generations:", GENERATIONS)
     print("Number of instants per simulation:", INSTANTS)
 
-    # Load environment configurations
-    for env in evl.population:
-        env.load_landmarks(LANDMARK_TXT, LANDMARK_SIZE, LANDMARK_COLOR)
-        env.load_walls(WALLS_TXT)
-
     # Simulation for each generation
+    try:
+        for generation in range(GENERATIONS):
+            print(f"Generation {generation} - Simulating...")
 
-    for generation in range(GENERATIONS):
-        print(f"Generation {generation} - Simulating...")
+            # random start location
+            delta_x = 300
+            delta_y = 300
+            new_x = X_START + np.random.randint(-delta_x, delta_x)
+            new_y = Y_START + np.random.randint(-delta_y, delta_y)
+            # new_x = X_START
+            # new_y = Y_START
+            for env in evl.population:
+                env.agent.x = new_x
+                env.agent.y = new_y
+                env.walls = []
+                env.load_walls(WALLS_TXT)
 
-        # random start location
-        delta_x = 300
-        delta_y = 300
-        new_x = X_START + np.random.randint(-delta_x, delta_x)
-        new_y = Y_START + np.random.randint(-delta_y, delta_y)
-        new_x = X_START
-        new_y = Y_START
-        for env in evl.population:
-            env.agent.x = new_x
-            env.agent.y = new_y
-
-        # Using shared array for multiprocessing
-        if multiprocessing:
+            # Using shared array for multiprocessing
             fitness_scores = mp.Array("d", AGENT_NUMBER)
             processes = []
             for i, env in enumerate(evl.population):
@@ -88,39 +79,51 @@ if __name__ == "__main__":
                 fitness_scores[:]
             )  # Convert shared array to numpy array
 
-        else:
-            fitness_scores = np.zeros(AGENT_NUMBER)
-            for i, env in enumerate(evl.population):
-                run_simulation(env, i, fitness_scores)
-
-        print(
-            f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)}"
-        )
-
-        with open("./saves/average_fitness_scores.txt", "a") as f:
-            f.write(
-                f"Generation: {generation} ~ Average Fitness: {np.mean(fitness_scores)} ~ std: {np.std(fitness_scores)} \n"
+            print(
+                f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)} - fit last agent: {fitness_scores[0]}"
             )
 
-        with open("./saves/fitness_scores.txt", "a") as f:
-            f.write(
-                f"Generation: {generation} ~ Fitness: {np.mean(fitness_scores)} ~ Best Fitness {np.max(fitness_scores)}\n"
+            with open("./saves/average_fitness_scores.txt", "a") as f:
+                f.write(
+                    f"Generation: {generation} ~ Average Fitness: {np.mean(fitness_scores)} ~ std: {np.std(fitness_scores)} \n"
+                )
+
+            with open("./saves/fitness_scores.txt", "a") as f:
+                f.write(
+                    f"Generation: {generation} ~ Fitness: {np.mean(fitness_scores)} ~ Best Fitness {np.max(fitness_scores)}\n"
+                )
+
+            best_agent = evl.population[np.argmax(fitness_scores)]
+            model = best_agent.agent.controller
+            torch.save(
+                model.state_dict(),
+                f"./saves/all/best_gen_{generation}.pth",
             )
+
+            if np.argmax(fitness_scores) == 0:
+                if evl.mutation_rate > 0.5:
+                    INSTANTS *= 2
+                    if INSTANTS > 8000:
+                        INSTANTS = 8000
+                    evl.mutation_rate = 0.1
+                    print("INSTANTS increased")
+                else:
+                    evl.mutation_rate += 0.1
+                    print("Mutation rate increased")
+            else:
+                evl.mutation_rate = 0.1
+
+            # Evolution steps
+            evl.rank_based_selection(fitness_scores)
+            evl.crossover()
+            # evl.mutation()
+
+    # Save best agent
+    finally:
+        fitness_scores = []
+        for env in evl.population:
+            fitness_scores.append(env.fitness_score())
 
         best_agent = evl.population[np.argmax(fitness_scores)]
         model = best_agent.agent.controller
-        torch.save(
-            model.state_dict(),
-            f"./saves/all/gen-{generation}_fit-{round(np.argmax(fitness_scores))}.pth",
-        )
-
-        # Evolution steps
-        evl.rank_based_selection(fitness_scores)
-        evl.crossover()
-        # evl.mutation()
-
-    # Save best agent
-
-    best_agent = evl.population[np.argmax(fitness_scores)]
-    model = best_agent.agent.controller
-    torch.save(model.state_dict(), "./saves/best_last_agent.pth")
+        torch.save(model.state_dict(), "./saves/best_last_agent.pth")

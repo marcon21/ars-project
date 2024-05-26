@@ -23,8 +23,8 @@ class NN(nn.Module):
             self.state = torch.zeros_like(self.state)
 
         x = torch.cat((x, self.state), dim=-1)
-        x = self.activation(self.fc1(x))
-        x = self.activation(self.fc2(x))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
 
         # Update state with the output of fc2 layer
         self.state = x.clone()
@@ -34,8 +34,6 @@ class NN(nn.Module):
         vr = x[0].item()
         vl = x[1].item()
 
-        assert np.isnan(vr) == False, "NaN in the network vr"
-        assert np.isnan(vl) == False, "NaN in the network vl"
         return vr, vl
 
     def set_weights(self, state):

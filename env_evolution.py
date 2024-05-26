@@ -25,22 +25,21 @@ GRID_SIZE = 10
 
 
 class EnvEvolution(Enviroment):
+
     def __init__(
         self,
         agent: EvolvedAgent,
         walls: List[Wall] = [],
         landmarks: List[Landmark] = [],
-        height=800,
-        width=800,
         instants=1000,
         w1=1,
         w2=1,
         w3=0.2,
+        grid_size=10,
+        height=1000,
+        width=1000,
     ):
         super().__init__(agent, walls, landmarks)
-        self.height = height
-        self.width = width
-        self.map = np.zeros((self.width, self.height))
         self.collisions = 0
         self.movements = 0
         self.instants = instants
@@ -48,105 +47,42 @@ class EnvEvolution(Enviroment):
         self.W2 = w2
         self.W3 = w3
         self.distance = self.agent.max_distance * np.ones(self.instants)
-        self.path = []
-        self.map = np.zeros((self.width, self.height))
         self.w = []
+        self.grid_size = grid_size
+        self.visited = {}
+        self.total_cells = (width // grid_size) * (height // grid_size)
 
     def reset(self, random=False):
-        if random:
-            self.agent.pos = np.array(
-                [np.random.randint(0, self.width), np.random.randint(0, self.height)],
-                dtype=np.float64,
-            )
-            self.agent.direction_vector = np.array(
-                [np.random.randint(-1, 2), np.random.randint(-1, 2)], dtype=np.float64
-            )
-        else:
-            self.agent.pos = np.array(
-                [self.width // 2, self.height // 2], dtype=np.float64
-            )
         self.collisions = 0
         self.movements = 0
-        self.map = np.zeros((self.width, self.height))
         self.distance = self.agent.max_distance * np.ones(self.instants)
-        self.path = []
+        self.visited = {}
 
     def move_agent(self, dt=1):
         x_start, y_start = self.agent.pos
-        try:
-            distances = np.array(
-                [
-                    data[1][0]
-                    for data in self.get_sensor_data(
-                        self.agent.n_sensors, self.agent.max_distance
-                    )
-                ],
-                dtype=np.float32,
-            )
+        distances = np.array(
+            [
+                data[1][0]
+                for data in self.get_sensor_data(
+                    self.agent.n_sensors, self.agent.max_distance
+                )
+            ],
+            dtype=np.float32,
+        )
 
-            distances = distances / self.agent.max_distance
-            distances = torch.tensor(distances, dtype=torch.float)
+        distances = distances / self.agent.max_distance
+        distances = torch.tensor(distances, dtype=torch.float)
 
-            vl, vr = self.agent.controller.forward(distances)
+        vl, vr = self.agent.controller.forward(distances)
 
-            # assert np.isnan(vl) == False and np.isnan(vr) == False, (
-            #     "NaN values"
-            #     + str(torch.isnan(distances).any())
-            #     + str(torch.isinf(distances).any())
-            # )
+        move_vector = self.agent.direction_vector * 5
+        theta = (vr - vl) * 2
 
-        except Exception as e:
-            print(e)
-            vl, vr = 0, 0
-
-        vl = vl * 10
-        vr = vr * 10
-
-        v, w = (vl + vr) / 2, (vr - vl) / (self.agent.size * 2)
-
-        if w == v == 0:
-            return
-
-        # print("vl, vr, v, w", vl, vr, v, w)
-
-        # if distances[0] > self.agent.size * 2:
-        #     w = 0
-        #     if 0 < v < 1:
-        #         v = 1
-        #     elif -1 < v < 0:
-        #         v = -1
-        #     elif v > 1:
-        #         v *= 10
-        #     elif v < -1:
-        #         v *= 10
-
-        # if distances[0] < self.agent.size * 2:
-        #     v = 0
-        #     w *= 10
-
-        dx, dy, dtheta = 0, 0, w * dt
-
-        if w == 0:
-            dx = v * dt * np.cos(self.agent.direction)
-            dy = v * dt * np.sin(self.agent.direction)
-        else:
-            R = v / w
-            dx = R * (
-                np.sin(self.agent.direction + dtheta) - np.sin(self.agent.direction)
-            )
-            dy = -R * (
-                np.cos(self.agent.direction + dtheta) - np.cos(self.agent.direction)
-            )
-
-        try:
-            dx, dy = round(dx), round(dy)
-        except Exception as e:
-            print(e)
-            print("dx, dy", dx, dy)
-            print("v, w", v, w)
-            print("vl, vr", vl, vr)
-
-        move_vector = np.array([dx, dy])
+        # print(
+        #     f"Move Vector: {move_vector}, move_speed: {self.agent.move_speed}, direction_vector: {self.agent.direction_vector}"
+        # )
+        # print(f"Theta: {theta}, vl: {vl}, vr: {vr}")
+        # print()
 
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
@@ -188,26 +124,14 @@ class EnvEvolution(Enviroment):
             if intersection_point:
                 # print("ILLEGAL MOVE")
                 return
+
         self.agent.apply_vector(move_vector)
+        self.agent.rotate(theta)
 
-        # Aggiorna il percorso
-        self.path.append((self.agent.pos[0], self.agent.pos[1]))
+        x_cell = int(self.agent.pos[0] // self.grid_size)
+        y_cell = int(self.agent.pos[1] // self.grid_size)
 
-        # Set visited positions to 1 within -10 to +10 range around agent's position
-        x_start = max(0, int(x_start) - 10)
-        x_end = min(self.map.shape[0], int(self.agent.pos[0]) + 10 + 1)
-        y_start = max(0, int(y_start) - 10)
-        y_end = min(self.map.shape[1], int(self.agent.pos[1]) + 10 + 1)
-
-        # Efficiently set the range using numpy slicing
-        if x_start > x_end:
-            x_start, x_end = x_end, x_start
-        if y_start > y_end:
-            y_start, y_end = y_end, y_start
-        self.map[x_start:x_end, y_start:y_end] = 1
-
-        # Ruota l'agente
-        self.agent.rotate(dtheta)
+        self.visited[(x_cell, y_cell)] = 1
 
     def fitness_score(self) -> float:
         # mean_angular_velocity = np.mean(np.abs(self.w))
@@ -218,7 +142,7 @@ class EnvEvolution(Enviroment):
 
     @property
     def explored_terrain(self) -> float:
-        return np.sum(self.map) / (self.width * self.height)
+        return len(self.visited) / self.total_cells
 
     def visualize_movement(self):
         if not self.path:
@@ -263,12 +187,13 @@ class PygameEvolvedEnviroment(EnvEvolution):
         walls: List[Wall] = [],
         color="black",
         landmarks: List[Landmark] = [],
-        height=800,
-        width=800,
         instants=1000,
         w1=0.5,
         w2=0.3,
         w3=0.2,
+        grid_size=10,
+        height=1000,
+        width=1000,
     ):
         super().__init__(
             agent,
@@ -280,6 +205,7 @@ class PygameEvolvedEnviroment(EnvEvolution):
             w1=w1,
             w2=w2,
             w3=w3,
+            grid_size=grid_size,
         )
 
     def show(self, window):
