@@ -14,7 +14,11 @@ import pickle
 
 def run_simulation(env, i, fitness_scores):
     env.reset()
-    for _ in range(INSTANTS):
+    intial = env.agent.pos.copy()
+    for i in range(INSTANTS):
+        if i == 20 and env.agent.pos[0] == intial[0] and env.agent.pos[1] == intial[1]:
+            fitness_scores[i] = 0
+            break
         env.move_agent()
     fitness_scores[i] = env.fitness_score()
 

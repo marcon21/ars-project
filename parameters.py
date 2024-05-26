@@ -6,17 +6,17 @@ from torch.nn import functional as F
 # Author: Enrico Cavinato
 
 # agent specifics
-AGENT_NUMBER = 60
+AGENT_NUMBER = 50
 X_START, Y_START = 350.0, 300.0
 N_SENSORS, MAX_DISTANCE = 12, 200
-AGENT_SIZE, AGENT_COLOR = 10, "orange"
+AGENT_SIZE, AGENT_COLOR = 20, "orange"
 W1, W2, W3 = 0.9, 0.05, 0.05
-INSTANTS = 800
+INSTANTS = 200
 ACTIVATION = F.relu
 
 # landmars and walls
 LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE = 2, "black", 2
-WALLS_TXT, LANDMARK_TXT = "./data/walls.txt", "./data/landmarks_experiment.txt"
+WALLS_TXT, LANDMARK_TXT = "./data/walls2.txt", "./data/landmarks_experiment.txt"
 
 
 # environment specifics
