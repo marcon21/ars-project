@@ -2,6 +2,7 @@ from torch import nn
 import torch
 from torch.nn import functional as F
 from copy import deepcopy
+import numpy as np
 
 
 class NN(nn.Module):
@@ -18,16 +19,23 @@ class NN(nn.Module):
         """
         Forward pass of the network
         """
+        if torch.isnan(self.state).any():
+            self.state = torch.zeros_like(self.state)
+
         x = torch.cat((x, self.state), dim=-1)
         x = self.activation(self.fc1(x))
         x = self.activation(self.fc2(x))
 
         # Update state with the output of fc2 layer
         self.state = x.clone()
-        x = self.activation(self.fc3(x))
-        x = F.softmax(x, dim=-1)
+
+        x = F.softmax(self.fc3(x), dim=-1)
+
         vr = x[0].item()
         vl = x[1].item()
+
+        assert np.isnan(vr) == False, "NaN in the network vr"
+        assert np.isnan(vl) == False, "NaN in the network vl"
         return vr, vl
 
     def set_weights(self, weights):

@@ -6,10 +6,10 @@ from torch.nn import functional as F
 # Author: Enrico Cavinato
 
 # agent specifics
-AGENT_NUMBER = 50
+AGENT_NUMBER = 20
 X_START, Y_START = 350.0, 300.0
 N_SENSORS, MAX_DISTANCE = 12, 200
-AGENT_SIZE, AGENT_COLOR = 20, "orange"
+AGENT_SIZE, AGENT_COLOR = 8, "orange"
 W1, W2, W3 = 0.9, 0.05, 0.05
 INSTANTS = 200
 ACTIVATION = F.relu

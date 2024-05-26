@@ -5,7 +5,12 @@ from typing import List
 import numpy as np
 from copy import deepcopy
 from math import degrees, atan2, pi
-from utils import distance_from_wall, intersection, angle_from_vector, intersection_line_circle
+from utils import (
+    distance_from_wall,
+    intersection,
+    angle_from_vector,
+    intersection_line_circle,
+)
 import torch
 from nn import NN
 from parameters import *
@@ -17,6 +22,7 @@ import matplotlib.animation as animation
 
 CLIP = 50
 GRID_SIZE = 10
+
 
 class EnvEvolution(Enviroment):
     def __init__(
@@ -30,7 +36,6 @@ class EnvEvolution(Enviroment):
         w1=1,
         w2=1,
         w3=0.2,
-        
     ):
         super().__init__(agent, walls, landmarks)
         self.height = height
@@ -57,103 +62,137 @@ class EnvEvolution(Enviroment):
                 [np.random.randint(-1, 2), np.random.randint(-1, 2)], dtype=np.float64
             )
         else:
-            self.agent.pos = np.array([self.width // 2, self.height // 2], dtype=np.float64)
+            self.agent.pos = np.array(
+                [self.width // 2, self.height // 2], dtype=np.float64
+            )
         self.collisions = 0
         self.movements = 0
         self.map = np.zeros((self.width, self.height))
         self.distance = self.agent.max_distance * np.ones(self.instants)
         self.path = []
-        
 
     def move_agent(self, dt=1):
+        x_start, y_start = self.agent.pos
         try:
-            distances = np.array([data[1][0] for data in self.get_sensor_data(self.agent.n_sensors, self.agent.max_distance)], dtype=np.float32)
-            vl, vr = self.agent.controller.forward(torch.tensor(distances, dtype=torch.float))
+            distances = np.array(
+                [
+                    data[1][0]
+                    for data in self.get_sensor_data(
+                        self.agent.n_sensors, self.agent.max_distance
+                    )
+                ],
+                dtype=np.float32,
+            )
+
+            distances = distances / self.agent.max_distance
+            distances = torch.tensor(distances, dtype=torch.float)
+
+            vl, vr = self.agent.controller.forward(distances)
+
+            # assert np.isnan(vl) == False and np.isnan(vr) == False, (
+            #     "NaN values"
+            #     + str(torch.isnan(distances).any())
+            #     + str(torch.isinf(distances).any())
+            # )
+
         except Exception as e:
             print(e)
             vl, vr = 0, 0
 
-        v, w = (vl + vr) / 2, (vr - vl) / (self.agent.size * 2) 
+        vl = vl * 10
+        vr = vr * 10
+
+        v, w = (vl + vr) / 2, (vr - vl) / (self.agent.size * 2)
+
         if w == v == 0:
             return
-        if distances[0] > self.agent.size * 2:
-            w = 0
-            if 0 < v < 1:
-                v = 1
-            elif -1 < v < 0:
-                v = -1
-            elif v > 1:
-                v *= 10
-            elif v < -1:
-                v *= 10
-                
-        if distances[0] < self.agent.size * 2:
-            v = 0
-            w *= 10
-        dx,dy, dtheta = 0,0, w * dt
+
+        # print("vl, vr, v, w", vl, vr, v, w)
+
+        # if distances[0] > self.agent.size * 2:
+        #     w = 0
+        #     if 0 < v < 1:
+        #         v = 1
+        #     elif -1 < v < 0:
+        #         v = -1
+        #     elif v > 1:
+        #         v *= 10
+        #     elif v < -1:
+        #         v *= 10
+
+        # if distances[0] < self.agent.size * 2:
+        #     v = 0
+        #     w *= 10
+
+        dx, dy, dtheta = 0, 0, w * dt
+
         if w == 0:
             dx = v * dt * np.cos(self.agent.direction)
             dy = v * dt * np.sin(self.agent.direction)
         else:
             R = v / w
-            dx = R * (np.sin(self.agent.direction + dtheta) - np.sin(self.agent.direction))
-            dy = -R * (np.cos(self.agent.direction + dtheta) - np.cos(self.agent.direction))
+            dx = R * (
+                np.sin(self.agent.direction + dtheta) - np.sin(self.agent.direction)
+            )
+            dy = -R * (
+                np.cos(self.agent.direction + dtheta) - np.cos(self.agent.direction)
+            )
 
-        x_start, y_start = self.agent.pos[0], self.agent.pos[1]
-        dx, dy = round(dx), round(dy)
-        dx, dy = np.clip(dx, -CLIP, CLIP), np.clip(dy, -CLIP, CLIP)
-        x, y = self.agent.pos[0], self.agent.pos[1]
-        new_x, new_y = x + dx, y + dy
-        size = self.agent.size
-
-        for wall in self.walls:
-            x1, y1, x2, y2 = wall.start[0], wall.start[1], wall.end[0], wall.end[1]
-            if x1 > x2:
-                x1, x2 = x2, x1
-            if y1 > y2:
-                y1, y2 = y2, y1
-            
-
-            if new_x <= 0:
-                new_x = self.agent.size + 1
-                dx = new_x - x
-                x = new_x
-                self.collisions += 1
-            if new_y <= 0:
-                new_y = self.agent.size + 1
-                dy = new_y - y
-                y = new_y
-
-            if x1 == x2:
-                if x + size < x1 and new_x + size >= x1:
-                    if y + size > y1 and y - size < y2:
-                        self.collisions += 1    
-                        self.agent.apply_vector(np.array([x1 - x - size - 1, 0]))
-                        dx, new_x, x = 0, x1 - size - 1, x1 - size - 1
-                elif x - size > x1 and new_x - size <= x1:
-                    if y + size > y1 and y - size < y2:
-                        self.collisions += 1
-                        self.agent.apply_vector(np.array([x1 - x + size + 1, 0]))
-                        dx, new_x, x = 0, x1 + size + 1, x1 + size + 1
-
-            elif y1 == y2:
-                if y + size < y1 and new_y + size >= y1:
-                    if x + size > x1 and x - size < x2:
-                        self.collisions += 1
-                        self.agent.apply_vector(np.array([0, y1 - y - size - 1]))
-                        dy, new_y, y = 0, y1 - size - 1, y1 - size - 1
-                elif y - size > y1 and new_y - size <= y1:
-                    if x + size > x1 and x - size < x2:
-                        self.collisions += 1
-                        self.agent.apply_vector(np.array([0, y1 - y + size + 1]))
-                        dy, new_y, y = 0, y1 + size + 1, y1 + size + 1
+        try:
+            dx, dy = round(dx), round(dy)
+        except Exception as e:
+            print(e)
+            print("dx, dy", dx, dy)
+            print("v, w", v, w)
+            print("vl, vr", vl, vr)
 
         move_vector = np.array([dx, dy])
+
+        for wall in self.walls:
+            current_d = distance_from_wall(wall, self.agent.pos)
+
+            if current_d <= self.agent.size:
+                # Vector of the wall direction
+                wall_vector = np.array(
+                    [wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]]
+                )
+                wall_vector = wall_vector / np.linalg.norm(wall_vector)
+
+                # Vector of the agent parallel to the wall
+                parallel_component = np.dot(wall_vector, move_vector) * wall_vector
+
+                # Vector of the agent perpendicular to the wall
+                wall_to_agent = self.agent.pos - np.array(
+                    distance_from_wall(wall, self.agent.pos, coords=True)
+                )
+                wall_to_agent = wall_to_agent / np.linalg.norm(wall_to_agent)
+
+                # If the agent is inside the wall push it out
+                self.agent.apply_vector(wall_to_agent * (self.agent.size - current_d))
+                # Check if the agent is moving towards the wall
+                if np.dot(self.agent.direction_vector, -wall_to_agent) > 0:
+                    # If the agent is moving towards the wall only consider the parallel component
+                    move_vector = parallel_component
+
+        # Check if the agent is making an illegal move
+        for wall in self.walls:
+            intersection_point = intersection(
+                Wall(
+                    self.agent.pos[0],
+                    self.agent.pos[1],
+                    self.agent.pos[0] + move_vector[0],
+                    self.agent.pos[1] + move_vector[1],
+                ),
+                wall,
+            )
+            if intersection_point:
+                # print("ILLEGAL MOVE")
+                return
         self.agent.apply_vector(move_vector)
 
         # Aggiorna il percorso
         self.path.append((self.agent.pos[0], self.agent.pos[1]))
-        
+
         # Set visited positions to 1 within -10 to +10 range around agent's position
         x_start = max(0, int(x_start) - 10)
         x_end = min(self.map.shape[0], int(self.agent.pos[0]) + 10 + 1)
@@ -166,46 +205,54 @@ class EnvEvolution(Enviroment):
         if y_start > y_end:
             y_start, y_end = y_end, y_start
         self.map[x_start:x_end, y_start:y_end] = 1
-        
-        
-        
 
         # Ruota l'agente
         self.agent.rotate(dtheta)
 
-
     def fitness_score(self) -> float:
-        #mean_angular_velocity = np.mean(np.abs(self.w))
-        #print(f"Mean Angular Velocity: {mean_angular_velocity}")
+        # mean_angular_velocity = np.mean(np.abs(self.w))
+        # print(f"Mean Angular Velocity: {mean_angular_velocity}")
         if self.collisions == 0:
-            return self.explored_terrain #- mean_angular_velocity
-        return self.explored_terrain #+ 1 / self.collisions - mean_angular_velocity
+            return self.explored_terrain  # - mean_angular_velocity
+        return self.explored_terrain  # + 1 / self.collisions - mean_angular_velocity
+
     @property
     def explored_terrain(self) -> float:
-        return np.sum(self  .map) / (self.width * self.height)
+        return np.sum(self.map) / (self.width * self.height)
 
     def visualize_movement(self):
-            if not self.path:
-                return
+        if not self.path:
+            return
 
-            fig, ax = plt.subplots(figsize=(10, 10))
-            ax.imshow(self.map.T, origin='lower', cmap='gray_r')
-            
-            # Correct the point size for the agent
-            ax.scatter(self.agent.pos[0], self.agent.pos[1], color='green', s=(self.agent.size * 2)**2, label='Agent')
-            
-            for wall in self.walls:
-                ax.plot([wall.start[0], wall.end[0]], [wall.start[1], wall.end[1]], 'b-', linewidth=2)
-            
-            # Plot the path
-            path = np.array(self.path)
-            ax.plot(path[:, 0], path[:, 1], 'r-', label='Path')
-            
-            ax.set_title('Agent Movement and Explored Terrain')
-            ax.set_xlabel('Width')
-            ax.set_ylabel('Height')
-            ax.legend()
-            plt.show()
+        fig, ax = plt.subplots(figsize=(10, 10))
+        ax.imshow(self.map.T, origin="lower", cmap="gray_r")
+
+        # Correct the point size for the agent
+        ax.scatter(
+            self.agent.pos[0],
+            self.agent.pos[1],
+            color="green",
+            s=(self.agent.size * 2) ** 2,
+            label="Agent",
+        )
+
+        for wall in self.walls:
+            ax.plot(
+                [wall.start[0], wall.end[0]],
+                [wall.start[1], wall.end[1]],
+                "b-",
+                linewidth=2,
+            )
+
+        # Plot the path
+        path = np.array(self.path)
+        ax.plot(path[:, 0], path[:, 1], "r-", label="Path")
+
+        ax.set_title("Agent Movement and Explored Terrain")
+        ax.set_xlabel("Width")
+        ax.set_ylabel("Height")
+        ax.legend()
+        plt.show()
 
 
 class PygameEvolvedEnviroment(EnvEvolution):

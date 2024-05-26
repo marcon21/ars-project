@@ -15,11 +15,13 @@ import pickle
 def run_simulation(env, i, fitness_scores):
     env.reset()
     intial = env.agent.pos.copy()
-    for i in range(INSTANTS):
-        if i == 20 and env.agent.pos[0] == intial[0] and env.agent.pos[1] == intial[1]:
-            fitness_scores[i] = 0
-            break
+    for _ in range(INSTANTS):
+        # if i == 20 and env.agent.pos[0] == intial[0] and env.agent.pos[1] == intial[1]:
+        #     fitness_scores[i] = 0
+        #     break
         env.move_agent()
+
+    # print(len(fitness_scores), i)
     fitness_scores[i] = env.fitness_score()
 
 
@@ -92,15 +94,13 @@ if __name__ == "__main__":
         print(
             f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)}"
         )
-        if generation == 0:
-            with open("./saves/average_fitness_scores.txt", "w") as f:
-                f.write(
-                    f"Generation: {generation} ~ Average Fitness: {np.mean(fitness_scores)} ~ std: {np.std(fitness_scores)} \n"
-                )
-            with open("./saves/fitness_scores.txt", "w") as f:
-                f.write(f"Generation: {generation} ~ Fitness: {fitness_scores}\n")
 
-        with open("./saves/fitness_scores.txt", "w") as f:
+        with open("./saves/average_fitness_scores.txt", "a") as f:
+            f.write(
+                f"Generation: {generation} ~ Average Fitness: {np.mean(fitness_scores)} ~ std: {np.std(fitness_scores)} \n"
+            )
+
+        with open("./saves/fitness_scores.txt", "a") as f:
             f.write(
                 f"Generation: {generation} ~ Fitness: {np.mean(fitness_scores)} ~ Best Fitness {np.max(fitness_scores)}\n"
             )
@@ -115,7 +115,7 @@ if __name__ == "__main__":
         # Evolution steps
         evl.rank_based_selection(fitness_scores)
         evl.crossover()
-        #evl.mutation()
+        # evl.mutation()
 
     # Save best agent
 

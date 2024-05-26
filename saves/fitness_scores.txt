@@ -1,15 +1,68 @@
-Generation: 0 ~ Fitness: [0.220625 0.220625 0.220625 0.220625 0.220625 0.220625 0.220625 0.220625
- 0.220625 0.220625 0.220625 0.220625 0.220625 0.220625 0.220625 0.220625
- 0.220625 0.220625 0.220625 0.220625]
-Generation: 1 ~ Fitness: [0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125
- 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125
- 0.283125 0.283125 0.283125 0.283125]
-Generation: 2 ~ Fitness: [0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125
- 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125
- 0.283125 0.283125 0.283125 0.283125]
-Generation: 3 ~ Fitness: [0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125
- 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125
- 0.283125 0.283125 0.283125 0.283125]
-Generation: 4 ~ Fitness: [0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125
- 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125 0.283125
- 0.283125 0.283125 0.283125 0.283125]
+Generation: 0 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 0 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 1 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 2 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 3 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 4 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 5 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 6 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 7 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 8 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 9 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 0 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 1 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 2 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 3 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 0 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 0 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 1 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 2 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 3 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 4 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 5 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 6 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 0 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 1 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 0 ~ Fitness: 0.01650625 ~ Best Fitness 0.01650625
+Generation: 1 ~ Fitness: 0.0 ~ Best Fitness 0.0
+Generation: 0 ~ Fitness: 0.012866562500000001 ~ Best Fitness 0.0331671875
+Generation: 1 ~ Fitness: 0.010718281250000001 ~ Best Fitness 0.0412015625
+Generation: 2 ~ Fitness: 0.009615390625000001 ~ Best Fitness 0.032834375
+Generation: 3 ~ Fitness: 0.019032421875 ~ Best Fitness 0.037053125
+Generation: 4 ~ Fitness: 0.010205078125 ~ Best Fitness 0.04068125
+Generation: 5 ~ Fitness: 0.011355859374999997 ~ Best Fitness 0.025090625
+Generation: 6 ~ Fitness: 0.0036251562500000008 ~ Best Fitness 0.0074640625
+Generation: 7 ~ Fitness: 0.008583984375 ~ Best Fitness 0.039753125
+Generation: 8 ~ Fitness: 0.004609843749999999 ~ Best Fitness 0.0323765625
+Generation: 9 ~ Fitness: 0.0048358593749999994 ~ Best Fitness 0.0365234375
+Generation: 0 ~ Fitness: 0.008106875000000001 ~ Best Fitness 0.034271875
+Generation: 0 ~ Fitness: 0.0072558593750000015 ~ Best Fitness 0.02471875
+Generation: 0 ~ Fitness: 0.011222109374999999 ~ Best Fitness 0.0359453125
+Generation: 0 ~ Fitness: 0.010488359374999999 ~ Best Fitness 0.0386703125
+Generation: 1 ~ Fitness: 0.0054035937499999995 ~ Best Fitness 0.0342984375
+Generation: 0 ~ Fitness: 0.008642265625000001 ~ Best Fitness 0.0343265625
+Generation: 1 ~ Fitness: 0.0036401562499999993 ~ Best Fitness 0.029665625
+Generation: 2 ~ Fitness: 0.00526296875 ~ Best Fitness 0.0234640625
+Generation: 0 ~ Fitness: 0.007691484375 ~ Best Fitness 0.023290625
+Generation: 1 ~ Fitness: 0.0037124999999999992 ~ Best Fitness 0.0106484375
+Generation: 0 ~ Fitness: 0.005125781249999999 ~ Best Fitness 0.026403125
+Generation: 0 ~ Fitness: 0.016724765625000002 ~ Best Fitness 0.0325390625
+Generation: 1 ~ Fitness: 0.022800312500000003 ~ Best Fitness 0.0397953125
+Generation: 2 ~ Fitness: 0.0086815625 ~ Best Fitness 0.028815625
+Generation: 3 ~ Fitness: 0.025117890625 ~ Best Fitness 0.039640625
+Generation: 4 ~ Fitness: 0.02404140625 ~ Best Fitness 0.040159375
+Generation: 0 ~ Fitness: 0.016667656250000003 ~ Best Fitness 0.0377546875
+Generation: 0 ~ Fitness: 0.013809062499999997 ~ Best Fitness 0.03131875
+Generation: 0 ~ Fitness: 0.0152346875 ~ Best Fitness 0.0293234375
+Generation: 0 ~ Fitness: 0.016673749999999998 ~ Best Fitness 0.03025
+Generation: 1 ~ Fitness: 0.019591484375000003 ~ Best Fitness 0.024934375
+Generation: 2 ~ Fitness: 0.022841171875 ~ Best Fitness 0.04025625
+Generation: 0 ~ Fitness: 0.015087109375 ~ Best Fitness 0.0367140625
+Generation: 0 ~ Fitness: 0.021303984375000005 ~ Best Fitness 0.035775
+Generation: 0 ~ Fitness: 0.021096328125 ~ Best Fitness 0.0370296875
+Generation: 1 ~ Fitness: 0.009989921875 ~ Best Fitness 0.026790625
+Generation: 0 ~ Fitness: 0.01723578125 ~ Best Fitness 0.034553125
+Generation: 1 ~ Fitness: 0.016517187500000002 ~ Best Fitness 0.0392703125
+Generation: 0 ~ Fitness: 0.0197953125 ~ Best Fitness 0.038834375
+Generation: 1 ~ Fitness: 0.013146171875000001 ~ Best Fitness 0.033896875
+Generation: 2 ~ Fitness: 0.01169453125 ~ Best Fitness 0.0399265625

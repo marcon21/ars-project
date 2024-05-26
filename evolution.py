@@ -9,6 +9,7 @@ import numpy as np
 import torch
 import random
 from parameters import *
+from copy import deepcopy
 
 
 # Author: Aurora Pia Ghiardelli
@@ -118,11 +119,13 @@ class Evolution:
         """
         # Create two children with the same genetic representation as the parents
         assert len(gen_a) == len(gen_b)
+        a = deepcopy(gen_a)
+        b = deepcopy(gen_b)
         new_genome = []
 
-        for i in range(len(gen_a)):
+        for i in range(len(a)):
             alpha = np.random.rand()
-            new_genome.append(alpha * gen_a[i] + (1 - alpha) * gen_b[i])
+            new_genome.append(alpha * a[i] + (1 - alpha) * b[i])
         new_genome = self.mutation(new_genome)
         return new_genome
 
