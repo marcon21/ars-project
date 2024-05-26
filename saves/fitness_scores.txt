@@ -86,3 +86,8 @@ Generation: 3 ~ Fitness: 0.01552848958333333 ~ Best Fitness 0.0822546875
 Generation: 4 ~ Fitness: 0.027117343750000005 ~ Best Fitness 0.163375
 Generation: 5 ~ Fitness: 0.030923749999999996 ~ Best Fitness 0.0944625
 Generation: 6 ~ Fitness: 0.027322708333333334 ~ Best Fitness 0.1189109375
+Generation: 0 ~ Fitness: 0.034766354166666666 ~ Best Fitness 0.088225
+Generation: 1 ~ Fitness: 0.009126145833333332 ~ Best Fitness 0.0158171875
+Generation: 2 ~ Fitness: 0.037813593750000006 ~ Best Fitness 0.1324046875
+Generation: 3 ~ Fitness: 0.02404333333333333 ~ Best Fitness 0.0927078125
+Generation: 4 ~ Fitness: 0.033789114583333335 ~ Best Fitness 0.1397359375
