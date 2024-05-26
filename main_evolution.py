@@ -64,6 +64,8 @@ if __name__ == "__main__":
         delta_y = 300
         new_x = X_START + np.random.randint(-delta_x, delta_x)
         new_y = Y_START + np.random.randint(-delta_y, delta_y)
+        new_x = X_START
+        new_y = Y_START
         for env in evl.population:
             env.agent.x = new_x
             env.agent.y = new_y

@@ -38,30 +38,16 @@ class NN(nn.Module):
         assert np.isnan(vl) == False, "NaN in the network vl"
         return vr, vl
 
-    def set_weights(self, weights):
+    def set_weights(self, state):
         """
         Set the weights and biases of the network from a list of 6 elements.
         The list should be in the following order: [fc1.weight, fc1.bias, fc2.weight, fc2.bias, fc3.weight, fc3.bias]
         """
-        if len(weights) != 6:
-            raise ValueError("Weights should be a list of 6 elements")
-        self.fc1.weight.data = weights[0]
-        self.fc1.bias.data = weights[1]
-        self.fc2.weight.data = weights[2]
-        self.fc2.bias.data = weights[3]
-        self.fc3.weight.data = weights[4]
-        self.fc3.bias.data = weights[5]
+        self.load_state_dict(state, strict=False)
 
     def get_weights(self):
         """
         Returns the weights of the network as a list of 6 elements
         the list is in the following order: [fc1.weight, fc1.bias, fc2.weight, fc2.bias, fc3.weight, fc3.bias]
         """
-        return [
-            self.fc1.weight.data,
-            self.fc1.bias.data,
-            self.fc2.weight.data,
-            self.fc2.bias.data,
-            self.fc3.weight.data,
-            self.fc3.bias.data,
-        ]
+        return deepcopy(self.state_dict())

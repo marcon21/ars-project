@@ -83,15 +83,15 @@ class Evolution:
         return random.choice(fittest)
 
     def mutation(self, genome):
-        for i in range(len(genome)):
-            if np.random.rand() < self.mutation_rate:
+        for k in genome:
+            if "weight" in k or "bias" in k:
+                noise = torch.randn_like(genome[k]) * self.mutation_rate
                 # Gaussian mutation of the genetic representation of the agent
-                genome[i] += np.random.normal(loc=0, scale=1)
+                genome[k] += noise
 
         return genome
 
     def crossover(self):
-
         new_population = []
         for _ in range(len(self.population)):
             parent1 = self.choose_parents()
@@ -119,14 +119,15 @@ class Evolution:
         """
         # Create two children with the same genetic representation as the parents
         assert len(gen_a) == len(gen_b)
-        a = deepcopy(gen_a)
-        b = deepcopy(gen_b)
-        new_genome = []
+        new_genome = {}
 
-        for i in range(len(a)):
+        for k in gen_a:
             alpha = np.random.rand()
-            new_genome.append(alpha * a[i] + (1 - alpha) * b[i])
+            # new_genome[k] = alpha * a[i] + (1 - alpha) * b[i]
+            new_genome[k] = gen_a[k] * alpha + gen_b[k] * (1 - alpha)
+
         new_genome = self.mutation(new_genome)
+
         return new_genome
 
     def create_model(self):
