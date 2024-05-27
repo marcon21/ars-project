@@ -18,42 +18,48 @@ clock = pygame.time.Clock()
 dt = 0
 pygame.display.set_caption(GAME_TITLE)
 
-# Load neural network model
-model = NN(INPUT_SIZE, HIDDEN_SIZE, HIDDEN_SIZE2, OUTPUT_SIZE)
-model.load_state_dict(torch.load("./saves/best_last_agent.pth"))
-
-delta_x = 300
-delta_y = 300
-new_x = X_START + np.random.randint(-delta_x, delta_x)
-new_y = Y_START + np.random.randint(-delta_y, delta_y)
-
-# Create agent instance
-agent = EvolvedAgent(
-    x=new_x,
-    y=new_y,
-    size=AGENT_SIZE,
-    move_speed=30,
-    n_sensors=INPUT_SIZE,
-    max_distance=MAX_DISTANCE,
-    color=AGENT_COLOR,
-    controller=model,
-)
-
 grid_size = GRIDSIZE
 
-# Create environment instance
-env = PygameEvolvedEnviroment(
-    agent=agent,
-    instants=INSTANTS,
-    height=HEIGHT,
-    width=WIDTH,
-    w1=W1,
-    w2=W2,
-    w3=W3,
-    grid_size=grid_size,
-)
-# Load walls or landmarks if necessary
-env.load_walls(WALLS_TXT)
+
+def setup():
+    global env, agent, model
+    # Load neural network model
+    model = NN(INPUT_SIZE, HIDDEN_SIZE, HIDDEN_SIZE2, OUTPUT_SIZE)
+    model.load_state_dict(torch.load("./saves/best_last_agent.pth"))
+
+    delta_x = 300
+    delta_y = 300
+    new_x = X_START + np.random.randint(-delta_x, delta_x)
+    new_y = Y_START + np.random.randint(-delta_y, delta_y)
+
+    # Create agent instance
+    agent = EvolvedAgent(
+        x=new_x,
+        y=new_y,
+        size=AGENT_SIZE,
+        move_speed=30,
+        n_sensors=INPUT_SIZE,
+        max_distance=MAX_DISTANCE,
+        color=AGENT_COLOR,
+        controller=model,
+    )
+
+    # Create environment instance
+    env = PygameEvolvedEnviroment(
+        agent=agent,
+        instants=INSTANTS,
+        height=HEIGHT,
+        width=WIDTH,
+        w1=W1,
+        w2=W2,
+        w3=W3,
+        grid_size=grid_size,
+    )
+    # Load walls or landmarks if necessary
+    env.load_walls(WALLS_TXT)
+
+
+setup()
 
 # Main game loop
 while True:
@@ -67,6 +73,8 @@ while True:
             if event.key == K_ESCAPE:
                 pygame.quit()
                 quit()
+            if event.key == K_SPACE:
+                setup()
 
     # Update agent and display environment
     env.move_agent()

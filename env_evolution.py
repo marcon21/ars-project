@@ -31,9 +31,9 @@ class EnvEvolution(Enviroment):
         walls: List[Wall] = [],
         landmarks: List[Landmark] = [],
         instants=1000,
-        w1=0.5,
-        w2=0.5,
-        w3=0.2,
+        w1=0.8,
+        w2=0.1,
+        w3=0.1,
         grid_size=100,
         height=1000,
         width=1000,
@@ -50,6 +50,8 @@ class EnvEvolution(Enviroment):
         self.grid_size = grid_size
         self.visited = {}
         self.total_cells = (width // grid_size) * (height // grid_size)
+        # self.average_turn = 0
+        # self.ticks = 0
 
     def reset(self, random=False):
         self.collisions = 0
@@ -58,7 +60,6 @@ class EnvEvolution(Enviroment):
         self.visited = {}
 
     def move_agent(self, dt=1):
-        x_start, y_start = self.agent.pos
         distances = np.array(
             [
                 data[1][0]
@@ -76,6 +77,11 @@ class EnvEvolution(Enviroment):
 
         move_vector = self.agent.direction_vector * 5
         theta = (vr - vl) * 2
+
+        # self.average_turn = (self.average_turn * self.ticks + abs(vl - vr)) / (
+        #     self.ticks + 1
+        # )
+        # self.ticks += 1
 
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
@@ -129,7 +135,11 @@ class EnvEvolution(Enviroment):
         self.visited[(x_cell, y_cell)] = 1
 
     def fitness_score(self) -> float:
-        return self.explored_terrain * self.w1 + np.exp(-self.collisions / 25) * self.w2
+        return (
+            self.explored_terrain * self.w1
+            + np.exp(-self.collisions / 25) * self.w2
+            # + self.average_turn * self.w3
+        )
 
     @property
     def explored_terrain(self) -> float:
