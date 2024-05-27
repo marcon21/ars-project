@@ -69,7 +69,6 @@ while True:
 
     # Update agent and display environment
     env.move_agent()
-
     env.show(window)
 
     for el in env.visited.keys():
