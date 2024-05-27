@@ -130,20 +130,10 @@ class Evolution:
         for pair in pairs:
             parent1, parent2 = pair
             new_genome = self.reproduction(parent1.agent.genome, parent2.agent.genome)
-            new_genome = self.mutation(new_genome)
 
-            agent = EvolvedAgent(
-                x=X_START,
-                y=Y_START,
-                n_sensors=N_SENSORS,
-                controller=self.create_model(),
-                size=AGENT_SIZE,
-                color=AGENT_COLOR,
-                max_distance=MAX_DISTANCE,
-            )
-            agent.controller.set_weights(new_genome)
-            env = EnvEvolution(agent)
-            new_population.append(env)
+            new_env = deepcopy(parent1)
+            new_env.agent.controller.set_weights(new_genome)
+            new_population.append(new_env)
 
         self.population = new_population
 
@@ -166,13 +156,6 @@ class Evolution:
 
     def create_model(self):
         return NN(N_SENSORS, activation=ACTIVATION)
-
-    def create_genetic_representation(self, model):
-        representation = []
-        for p in model.parameters():
-            representation.append(p.data.numpy().flatten())
-
-        return representation
 
     def create_population(self):
         self.population = []

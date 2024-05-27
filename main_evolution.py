@@ -10,6 +10,8 @@ import pygame
 from pygame.locals import *
 from tqdm import tqdm
 import pickle
+import random
+from copy import deepcopy
 
 
 def run_simulation(env, i, fitness_scores):
@@ -44,6 +46,15 @@ if __name__ == "__main__":
     print("Number of generations:", GENERATIONS)
     print("Number of instants per simulation:", INSTANTS)
 
+    maps = []
+    map_paths = [WALLS_TXT]
+    for path in map_paths:
+        with open(path, "r") as f:
+            w = []
+            for line in f:
+                w.append(list(map(int, line.strip().split())))
+    maps.append(w)
+
     # Simulation for each generation
     try:
         for generation in range(GENERATIONS):
@@ -59,8 +70,7 @@ if __name__ == "__main__":
             for env in evl.population:
                 env.agent.x = new_x
                 env.agent.y = new_y
-                env.walls = []
-                env.load_walls(WALLS_TXT)
+                env.walls = deepcopy(random.choice(maps))
 
             # Using shared array for multiprocessing
             fitness_scores = mp.Array("d", AGENT_NUMBER)
@@ -80,18 +90,22 @@ if __name__ == "__main__":
             )  # Convert shared array to numpy array
 
             print(
-                f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)} - fit last agent: {fitness_scores[0]}"
+                f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)} - fit last gen: {fitness_scores[0]}"
             )
 
-            with open("./saves/average_fitness_scores.txt", "a") as f:
-                f.write(
-                    f"Generation: {generation} ~ Average Fitness: {np.mean(fitness_scores)} ~ std: {np.std(fitness_scores)} \n"
-                )
-
-            with open("./saves/fitness_scores.txt", "a") as f:
-                f.write(
-                    f"Generation: {generation} ~ Fitness: {np.mean(fitness_scores)} ~ Best Fitness {np.max(fitness_scores)}\n"
-                )
+            # Check if the best agent is the same as last generation
+            if np.argmax(fitness_scores) == 0:
+                if evl.mutation_rate > 0.3:
+                    INSTANTS *= 2
+                    if INSTANTS > 8000:
+                        INSTANTS = 8000
+                    evl.mutation_rate = 0.1
+                    print("INSTANTS increased")
+                else:
+                    evl.mutation_rate += 0.05
+                    print("Mutation rate increased")
+            else:
+                evl.mutation_rate = 0.1
 
             best_agent = evl.population[np.argmax(fitness_scores)]
             model = best_agent.agent.controller
@@ -100,30 +114,11 @@ if __name__ == "__main__":
                 f"./saves/all/best_gen_{generation}.pth",
             )
 
-            if np.argmax(fitness_scores) == 0:
-                if evl.mutation_rate > 0.5:
-                    INSTANTS *= 2
-                    if INSTANTS > 8000:
-                        INSTANTS = 8000
-                    evl.mutation_rate = 0.1
-                    print("INSTANTS increased")
-                else:
-                    evl.mutation_rate += 0.1
-                    print("Mutation rate increased")
-            else:
-                evl.mutation_rate = 0.1
-
             # Evolution steps
             evl.rank_based_selection(fitness_scores)
             evl.crossover()
-            # evl.mutation()
 
     # Save best agent
     finally:
-        fitness_scores = []
-        for env in evl.population:
-            fitness_scores.append(env.fitness_score())
-
-        best_agent = evl.population[np.argmax(fitness_scores)]
         model = best_agent.agent.controller
         torch.save(model.state_dict(), "./saves/best_last_agent.pth")
