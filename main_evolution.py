@@ -84,8 +84,15 @@ if __name__ == "__main__":
                 fitness_scores[:]
             )  # Convert shared array to numpy array
 
+            if np.argmax(fitness_scores) == 0:
+                s = "Best agent is the same as last generation"
+            elif fitness_scores[0] < np.max(fitness_scores):
+                s = "The student has become the master"
+            else:
+                s = "Nothing has changed"
+
             print(
-                f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)} - fit last gen: {fitness_scores[0]}"
+                f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)} - {s}"
             )
 
             # Check if the best agent is the same as last generation

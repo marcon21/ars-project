@@ -63,7 +63,7 @@ class EnvEvolution(Enviroment):
             [
                 data[1][0]
                 for data in self.get_sensor_data(
-                    self.agent.n_sensors, self.agent.max_distance
+                    self.agent.n_sensors, self.agent.max_distance, noise=True
                 )
             ],
             dtype=np.float32,
@@ -129,22 +129,6 @@ class EnvEvolution(Enviroment):
         self.visited[(x_cell, y_cell)] = 1
 
     def fitness_score(self) -> float:
-        # assert self.explored_terrain <= 1, print("Expl Terr", self.explored_terrain)
-        # assert np.exp(-self.collisions / 25) <= 1, print(
-        #     "Colls", self.collisions, np.exp(-self.collisions / 25)
-        # )
-        assert (
-            self.explored_terrain * self.w1 + np.exp(-self.collisions / 25) * self.w2
-            <= 1
-        ), print(
-            "Expl Terr",
-            self.explored_terrain,
-            "Colls",
-            self.collisions,
-            "Score",
-            self.explored_terrain * self.w1 + np.exp(-self.collisions / 25) * self.w2,
-        )
-
         return self.explored_terrain * self.w1 + np.exp(-self.collisions / 25) * self.w2
 
     @property
