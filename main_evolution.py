@@ -68,7 +68,6 @@ if __name__ == "__main__":
             for env in evl.population:
                 env.agent.x = new_x
                 env.agent.y = new_y
-
                 env.walls = deepcopy(random.choice(maps))
 
             # Using shared array for multiprocessing

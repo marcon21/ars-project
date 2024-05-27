@@ -39,17 +39,18 @@ agent = EvolvedAgent(
     controller=model,
 )
 
+grid_size = GRIDSIZE
 
 # Create environment instance
 env = PygameEvolvedEnviroment(
     agent=agent,
     instants=INSTANTS,
-    grid_size=10,
     height=HEIGHT,
     width=WIDTH,
     w1=W1,
     w2=W2,
     w3=W3,
+    grid_size=grid_size,
 )
 # Load walls or landmarks if necessary
 env.load_walls(WALLS_TXT)
@@ -72,7 +73,7 @@ while True:
     env.show(window)
 
     for el in env.visited.keys():
-        pygame.draw.circle(window, (0, 0, 255), np.array(el) * 10, 2)
+        pygame.draw.circle(window, (0, 0, 255), np.array(el) * grid_size, 2)
 
     pygame.display.flip()
 

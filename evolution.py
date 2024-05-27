@@ -132,21 +132,21 @@ class Evolution:
             new_genome = self.reproduction(parent1.agent.genome, parent2.agent.genome)
             new_genome = self.mutation(new_genome)
 
-            agent = EvolvedAgent(
-                x=X_START,
-                y=Y_START,
-                n_sensors=N_SENSORS,
-                controller=self.create_model(),
-                size=AGENT_SIZE,
-                color=AGENT_COLOR,
-                max_distance=MAX_DISTANCE,
-            )
-            agent.controller.set_weights(new_genome)
-            env = EnvEvolution(agent)
+            # agent = EvolvedAgent(
+            #     x=X_START,
+            #     y=Y_START,
+            #     n_sensors=N_SENSORS,
+            #     controller=self.create_model(),
+            #     size=AGENT_SIZE,
+            #     color=AGENT_COLOR,
+            #     max_distance=MAX_DISTANCE,
+            # )
+            # agent.controller.set_weights(new_genome)
+            # env = EnvEvolution(agent)
 
-            # new_env = deepcopy(parent1)
-            # new_env.agent.controller.set_weights(new_genome)
-            new_population.append(env)
+            new_env = deepcopy(parent1)
+            new_env.agent.controller.set_weights(new_genome)
+            new_population.append(new_env)
 
         self.population = new_population
 
@@ -184,6 +184,14 @@ class Evolution:
             )
             # self.env = EnvEvolution(agent, height=self.env.height, width=self.env.width)
             # agent.controller.set_weights(agent.controller.get_weights())
-            env = EnvEvolution(agent)
+            env = EnvEvolution(
+                agent,
+                grid_size=GRIDSIZE,
+                height=HEIGHT,
+                width=WIDTH,
+                w1=W1,
+                w2=W2,
+                w3=W3,
+            )
 
             self.population.append(env)

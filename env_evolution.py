@@ -21,7 +21,6 @@ import math
 import matplotlib.animation as animation
 
 CLIP = 50
-GRID_SIZE = 10
 
 
 class EnvEvolution(Enviroment):
@@ -32,10 +31,10 @@ class EnvEvolution(Enviroment):
         walls: List[Wall] = [],
         landmarks: List[Landmark] = [],
         instants=1000,
-        w1=1,
-        w2=1,
+        w1=0.5,
+        w2=0.5,
         w3=0.2,
-        grid_size=10,
+        grid_size=100,
         height=1000,
         width=1000,
     ):
@@ -43,9 +42,9 @@ class EnvEvolution(Enviroment):
         self.collisions = 0
         self.movements = 0
         self.instants = instants
-        self.W1 = w1
-        self.W2 = w2
-        self.W3 = w3
+        self.w1 = w1
+        self.w2 = w2
+        self.w3 = w3
         self.distance = self.agent.max_distance * np.ones(self.instants)
         self.w = []
         self.grid_size = grid_size
@@ -78,16 +77,12 @@ class EnvEvolution(Enviroment):
         move_vector = self.agent.direction_vector * 5
         theta = (vr - vl) * 2
 
-        # print(
-        #     f"Move Vector: {move_vector}, move_speed: {self.agent.move_speed}, direction_vector: {self.agent.direction_vector}"
-        # )
-        # print(f"Theta: {theta}, vl: {vl}, vr: {vr}")
-        # print()
-
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
 
             if current_d <= self.agent.size:
+                self.collisions += 1
+
                 # Vector of the wall direction
                 wall_vector = np.array(
                     [wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]]
@@ -134,11 +129,23 @@ class EnvEvolution(Enviroment):
         self.visited[(x_cell, y_cell)] = 1
 
     def fitness_score(self) -> float:
-        # mean_angular_velocity = np.mean(np.abs(self.w))
-        # print(f"Mean Angular Velocity: {mean_angular_velocity}")
-        if self.collisions == 0:
-            return self.explored_terrain  # - mean_angular_velocity
-        return self.explored_terrain  # + 1 / self.collisions - mean_angular_velocity
+        # assert self.explored_terrain <= 1, print("Expl Terr", self.explored_terrain)
+        # assert np.exp(-self.collisions / 25) <= 1, print(
+        #     "Colls", self.collisions, np.exp(-self.collisions / 25)
+        # )
+        assert (
+            self.explored_terrain * self.w1 + np.exp(-self.collisions / 25) * self.w2
+            <= 1
+        ), print(
+            "Expl Terr",
+            self.explored_terrain,
+            "Colls",
+            self.collisions,
+            "Score",
+            self.explored_terrain * self.w1 + np.exp(-self.collisions / 25) * self.w2,
+        )
+
+        return self.explored_terrain * self.w1 + np.exp(-self.collisions / 25) * self.w2
 
     @property
     def explored_terrain(self) -> float:
