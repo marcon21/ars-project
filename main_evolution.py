@@ -25,8 +25,12 @@ def run_simulation(env, i, fitness_scores):
 if __name__ == "__main__":
     # Initialize Evolution
     import torch
+    import os
 
-    mp.set_start_method("fork")
+    if os.name == "nt":
+        mp.set_start_method("spawn")
+    else:
+        mp.set_start_method("fork")
 
     evl = Evolution(
         initial_population_size=AGENT_NUMBER,
@@ -86,10 +90,8 @@ if __name__ == "__main__":
 
             if np.argmax(fitness_scores) == 0:
                 s = "Best agent is the same as last generation"
-            elif fitness_scores[0] < np.max(fitness_scores):
-                s = "The student has become the master"
             else:
-                s = "Nothing has changed"
+                s = "The student has become the master"
 
             print(
                 f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)} - {s}"
