@@ -28,8 +28,6 @@ if __name__ == "__main__":
 
     mp.set_start_method("fork")
 
-    multiprocessing = True
-
     evl = Evolution(
         initial_population_size=AGENT_NUMBER,
         input_dim=INPUT_SIZE + 4,
@@ -41,7 +39,6 @@ if __name__ == "__main__":
     )
     evl.create_population()
 
-    print("Initializing evolution... multiprocessing:", multiprocessing)
     print("Size of the population:", len(evl.population))
     print("Number of generations:", GENERATIONS)
     print("Number of instants per simulation:", INSTANTS)
@@ -63,8 +60,8 @@ if __name__ == "__main__":
             delta_y = 300
             new_x = X_START + np.random.randint(-delta_x, delta_x)
             new_y = Y_START + np.random.randint(-delta_y, delta_y)
-            # new_x = X_START
-            # new_y = Y_START
+            new_x = X_START
+            new_y = Y_START
             for env in evl.population:
                 env.agent.x = new_x
                 env.agent.y = new_y
@@ -92,18 +89,18 @@ if __name__ == "__main__":
             )
 
             # Check if the best agent is the same as last generation
-            if np.argmax(fitness_scores) == 0:
-                if evl.mutation_rate > 0.3:
-                    INSTANTS *= 2
-                    if INSTANTS > 8000:
-                        INSTANTS = 8000
-                    evl.mutation_rate = 0.1
-                    print("INSTANTS increased")
-                else:
-                    evl.mutation_rate += 0.05
-                    print("Mutation rate increased")
-            else:
-                evl.mutation_rate = 0.1
+            # if np.argmax(fitness_scores) == 0:
+            #     if evl.mutation_rate > 0.3:
+            #         INSTANTS *= 2
+            #         if INSTANTS > 8000:
+            #             INSTANTS = 8000
+            #         evl.mutation_rate = 0.1
+            #         print("INSTANTS increased")
+            #     else:
+            #         evl.mutation_rate += 0.05
+            #         print("Mutation rate increased")
+            # else:
+            #     evl.mutation_rate = 0.1
 
             best_agent = evl.population[np.argmax(fitness_scores)]
             model = best_agent.agent.controller

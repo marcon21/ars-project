@@ -6,12 +6,12 @@ from torch.nn import functional as F
 # Author: Enrico Cavinato
 
 # agent specifics
-AGENT_NUMBER = 64
+AGENT_NUMBER = 128 * 2
 X_START, Y_START = 500, 500
 N_SENSORS, MAX_DISTANCE = 12, 200
 AGENT_SIZE, AGENT_COLOR = 8, "orange"
-W1, W2, W3 = 0.8, 0.2, 0
-INSTANTS = 1000
+W1, W2, W3 = 0.95, 0.05, 0
+INSTANTS = 500
 ACTIVATION = F.relu
 
 # landmars and walls
@@ -28,7 +28,7 @@ GAME_TITLE, SCREEN_COLOR = "SELF NAVIGATION", "white"
 # evolution specifics
 GENERATIONS = 30
 INPUT_SIZE = 12
-HIDDEN_SIZE = 32
-HIDDEN_SIZE2 = 4
+HIDDEN_SIZE = 64
+HIDDEN_SIZE2 = 16
 OUTPUT_SIZE = 2
 GRIDSIZE = 30
