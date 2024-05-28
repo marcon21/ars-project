@@ -8,6 +8,7 @@ from evolved_agent import EvolvedAgent
 import torch
 from nn import NN
 from parameters import *
+import os
 
 
 # Import parameters from a file if necessary
@@ -63,7 +64,10 @@ files = [
 
 gens_to_load = 5
 for i in range(gens_to_load):
-    files.append(f"./saves/all/best_gen_{i}.pth")
+    # check if file exists
+    f = f"./saves/all/best_gen_{i}.pth"
+    if os.path.isfile(f):
+        files.append(f)
 
 envs = []
 
