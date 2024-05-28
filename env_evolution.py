@@ -3,92 +3,92 @@ from evolved_agent import EvolvedAgent
 from actors import Agent, Wall, Landmark
 from typing import List
 import numpy as np
-import pygame
 from copy import deepcopy
 from math import degrees, atan2, pi
-from utils import distance_from_wall, intersection, angle_from_vector
-import math
+from utils import (
+    distance_from_wall,
+    intersection,
+    angle_from_vector,
+    intersection_line_circle,
+)
 import torch
+from nn import NN
+from parameters import *
+import matplotlib.pyplot as plt
+from numpy import ceil
+import pygame
+import math
+import matplotlib.animation as animation
+
+CLIP = 50
 
 
 class EnvEvolution(Enviroment):
+
     def __init__(
         self,
         agent: EvolvedAgent,
         walls: List[Wall] = [],
         landmarks: List[Landmark] = [],
-        height=800,
-        width=800,
         instants=1000,
-        w1=1,
-        w2=1,
-        w3=0.2,
+        w1=0.8,
+        w2=0.1,
+        w3=0.1,
+        grid_size=100,
+        height=1000,
+        width=1000,
     ):
         super().__init__(agent, walls, landmarks)
-        self.height = height
-        self.width = width
-        self.map = np.zeros((self.width // 10, self.height // 10))
         self.collisions = 0
         self.movements = 0
         self.instants = instants
-        self.W1 = w1
-        self.W2 = w2
-        self.W3 = w3
+        self.w1 = w1
+        self.w2 = w2
+        self.w3 = w3
         self.distance = self.agent.max_distance * np.ones(self.instants)
+        self.w = []
+        self.grid_size = grid_size
+        self.visited = {}
+        self.total_cells = (width // grid_size) * (height // grid_size)
+        # self.average_turn = 0
+        # self.ticks = 0
 
     def reset(self, random=False):
-        if random:
-            self.agent.pos = np.array(
-                [np.random.randint(0, self.width), np.random.randint(0, self.height)],
-                dtype=np.float64,
-            )
-            self.agent.direction_vector = np.array(
-                [np.random.randint(-1, 2), np.random.randint(-1, 2)], dtype=np.float64
-            )
-        else:
-            self.agent.pos = np.array(
-                [self.width // 2, self.height // 2], dtype=np.float64
-            )
         self.collisions = 0
         self.movements = 0
-        self.map = np.zeros((self.width // 100, self.height // 100))
         self.distance = self.agent.max_distance * np.ones(self.instants)
+        self.visited = {}
 
-    def think(self):
-        # Update terrain explored
-        try:
-            self.map[
-                round(self.agent.pos[0]) // 100 - 1, round(self.agent.pos[1]) // 100 - 1
-            ] = 1
+    def move_agent(self, dt=1):
+        distances = np.array(
+            [
+                data[1][0]
+                for data in self.get_sensor_data(
+                    self.agent.n_sensors, self.agent.max_distance, noise=True
+                )
+            ],
+            dtype=np.float32,
+        )
 
-            # Get sensor data
-            sensor_data = self.get_sensor_data(
-                self.agent.n_sensors, self.agent.max_distance
-            )
+        distances = distances / self.agent.max_distance
+        distances = torch.tensor(distances, dtype=torch.float)
 
-            # Calculate mean distance and count collisions
-            distances = np.array([data[1][0] for data in sensor_data], dtype=np.float32)
-            min_distance = np.minimum(distances)
-            self.distance[self.movements] = min_distance
-            self.collisions += np.sum(distances <= self.agent.size)
-            vl, vr = self.agent.controller.forward(torch.tensor(distances))
-        except Exception as e:
-            # print(e)
-            vl, vr = 0, 0
+        vl, vr = self.agent.controller.forward(distances)
 
-        return vl, vr
+        move_vector = self.agent.direction_vector * 5
+        theta = (vr - vl) * 2
 
-    def move_agent(self, dt=1 / 60):
-        vl, vr = self.think()
-        ds = dt * (vl + vr) / 2
-        dx, dy = np.cos(ds), np.sin(ds)
-        dtheta = dt * (vr - vl) / self.agent.size
-        move_vector = self.agent.direction_vector + np.array([dx, dy])
+        # self.average_turn = (self.average_turn * self.ticks + abs(vl - vr)) / (
+        #     self.ticks + 1
+        # )
+        # self.ticks += 1
 
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)
 
             if current_d <= self.agent.size:
+                self.collisions += 1
+
                 # Vector of the wall direction
                 wall_vector = np.array(
                     [wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]]
@@ -127,35 +127,74 @@ class EnvEvolution(Enviroment):
                 return
 
         self.agent.apply_vector(move_vector)
-        self.agent.rotate(dtheta)
-        self.movements += 1
+        self.agent.rotate(theta)
+
+        x_cell = int(self.agent.pos[0] // self.grid_size)
+        y_cell = int(self.agent.pos[1] // self.grid_size)
+
+        self.visited[(x_cell, y_cell)] = 1
 
     def fitness_score(self) -> float:
         return (
-            self.W1 * self.explored_terrain
-            + self.W2 * np.mean(1 / self.distance)
-            + self.W3 * np.exp(-self.collisions)
+            self.explored_terrain * self.w1
+            + np.exp(-self.collisions / 25) * self.w2
+            # + self.average_turn * self.w3
         )
 
     @property
     def explored_terrain(self) -> float:
-        return np.sum(self.map) / (self.width // 100 * self.height // 100)
+        return len(self.visited) / self.total_cells
+
+    def visualize_movement(self):
+        if not self.path:
+            return
+
+        fig, ax = plt.subplots(figsize=(10, 10))
+        ax.imshow(self.map.T, origin="lower", cmap="gray_r")
+
+        # Correct the point size for the agent
+        ax.scatter(
+            self.agent.pos[0],
+            self.agent.pos[1],
+            color="green",
+            s=(self.agent.size * 2) ** 2,
+            label="Agent",
+        )
+
+        for wall in self.walls:
+            ax.plot(
+                [wall.start[0], wall.end[0]],
+                [wall.start[1], wall.end[1]],
+                "b-",
+                linewidth=2,
+            )
+
+        # Plot the path
+        path = np.array(self.path)
+        ax.plot(path[:, 0], path[:, 1], "r-", label="Path")
+
+        ax.set_title("Agent Movement and Explored Terrain")
+        ax.set_xlabel("Width")
+        ax.set_ylabel("Height")
+        ax.legend()
+        plt.show()
 
 
 class PygameEvolvedEnviroment(EnvEvolution):
 
     def __init__(
         self,
-        agent: Agent,
+        agent,
         walls: List[Wall] = [],
         color="black",
         landmarks: List[Landmark] = [],
-        height=800,
-        width=800,
         instants=1000,
         w1=0.5,
         w2=0.3,
         w3=0.2,
+        grid_size=10,
+        height=1000,
+        width=1000,
     ):
         super().__init__(
             agent,
@@ -167,6 +206,7 @@ class PygameEvolvedEnviroment(EnvEvolution):
             w1=w1,
             w2=w2,
             w3=w3,
+            grid_size=grid_size,
         )
 
     def show(self, window):
