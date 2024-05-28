@@ -40,6 +40,7 @@ if __name__ == "__main__":
         output_dim=2,
         mutation_rate=0.1,
         elitism_rate=0.1,
+        dt=1,
     )
     evl.create_population()
 

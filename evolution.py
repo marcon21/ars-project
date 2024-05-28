@@ -23,6 +23,7 @@ class Evolution:
         output_dim,
         mutation_rate=0.1,
         elitism_rate=0.1,
+        dt=1,
     ):
         self.initial_population_size = initial_population_size
         self.input_dim = input_dim
@@ -31,6 +32,7 @@ class Evolution:
         self.output_dim = output_dim
         self.mutation_rate = mutation_rate
         self.elitism = int(initial_population_size * elitism_rate)
+        self.dt = dt
 
     def proportionate_selection(
         self, fitness_scores
@@ -161,6 +163,7 @@ class Evolution:
             activation=ACTIVATION,
             x1=HIDDEN_SIZE,
             x2=HIDDEN_SIZE2,
+            dt=self.dt,
         )
 
     def create_population(self):
