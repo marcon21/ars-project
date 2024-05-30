@@ -62,7 +62,9 @@ files = [
     "./saves/best_last_agent.pth",
 ]
 
-gens_to_load = 5
+files = ["saves/all/bestof/best_gen_20.pth"]
+
+gens_to_load = 0
 for i in range(gens_to_load):
     # check if file exists
     f = f"./saves/all/best_gen_{i}.pth"
@@ -109,7 +111,12 @@ while True:
 
         if i == 0:
             for el in env.visited.keys():
-                pygame.draw.circle(window, (0, 0, 255), np.array(el) * grid_size, 2)
+                pygame.draw.circle(
+                    window,
+                    (0, 0, 255),
+                    np.array(el) * grid_size + [AGENT_SIZE / 2, AGENT_SIZE / 2],
+                    2,
+                )
 
     pygame.display.flip()
 

@@ -124,7 +124,7 @@ class Enviroment:
                                 )
 
             if noise:
-                n = np.random.normal(0, 5)
+                n = np.random.normal(0, 10)
                 d = d + n
             sensor_data.append(
                 (int_point, (d, orientation, signature), (sensor.start, sensor.end))

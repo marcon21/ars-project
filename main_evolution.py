@@ -58,6 +58,15 @@ if __name__ == "__main__":
     # Simulation for each generation
     try:
         for generation in range(GENERATIONS):
+            if generation <= 15:
+                W1 = 0.95
+                W2 = 0.05
+                W3 = 0
+            else:
+                W1 = 0.8
+                W2 = 0.2
+                W3 = 0
+
             print(f"Generation {generation} - Simulating...")
 
             # random start location
@@ -71,6 +80,9 @@ if __name__ == "__main__":
                 env.agent.x = new_x
                 env.agent.y = new_y
                 env.walls = deepcopy(random.choice(maps))
+                env.w1 = W1
+                env.w2 = W2
+                env.w3 = W3
 
             # Using shared array for multiprocessing
             fitness_scores = mp.Array("d", AGENT_NUMBER)
@@ -112,16 +124,37 @@ if __name__ == "__main__":
             # else:
             #     evl.mutation_rate = 0.1
 
+            # Save best agent
             best_agent = evl.population[np.argmax(fitness_scores)]
             model = best_agent.agent.controller
             torch.save(
                 model.state_dict(),
-                f"./saves/all/best_gen_{generation}.pth",
+                f"./saves/all/bestof/best_gen_{generation}.pth",
             )
+
+            # check if folder exists
+            if not os.path.exists(f"./saves/all/gen_{generation}"):
+                os.makedirs(f"./saves/all/gen_{generation}")
+            else:
+                # remove all files in folder
+                files = os.listdir(f"./saves/all/gen_{generation}")
+                for file in files:
+                    os.remove(f"./saves/all/gen_{generation}/{file}")
+
+            # Save all agents
+            for i, env in enumerate(evl.population):
+                model = env.agent.controller
+                torch.save(
+                    model.state_dict(),
+                    f"./saves/all/gen_{generation}/agent_{i}.pth",
+                )
 
             # Evolution steps
             evl.rank_based_selection(fitness_scores)
             evl.crossover()
+
+            if generation % 10 == 0 and generation != 0:
+                INSTANTS *= 2
 
     # Save best agent
     finally:
