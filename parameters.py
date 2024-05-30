@@ -16,7 +16,15 @@ ACTIVATION = F.relu
 
 # landmars and walls
 LANDMARKS, LANDMARK_COLOR, LANDMARK_SIZE = 2, "black", 2
-WALLS_TXT, LANDMARK_TXT = "./data/walls2.txt", "./data/landmarks_experiment.txt"
+WALLS_TXT = [
+    "./data/walls/walls2.txt",
+    "./data/walls/walls3.txt",
+    "./data/walls/walls4.txt",
+    "./data/walls/walls5.txt",
+    "./data/walls/walls6.txt",
+    "./data/walls/walls7.txt",
+]
+LANDMARK_TXT = "./data/landmarks_experiment.txt"
 
 
 # environment specifics

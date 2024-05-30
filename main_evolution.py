@@ -49,8 +49,9 @@ if __name__ == "__main__":
     print("Number of instants per simulation:", INSTANTS)
 
     maps = []
-    map_paths = [WALLS_TXT]
+    map_paths = WALLS_TXT
     for path in map_paths:
+        print(path)
         evl.population[0].load_walls(path)
         w = deepcopy(evl.population[0].walls)
         maps.append(w)

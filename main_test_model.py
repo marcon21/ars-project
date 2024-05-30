@@ -9,6 +9,7 @@ import torch
 from nn import NN
 from parameters import *
 import os
+from actors import Wall
 
 
 # Import parameters from a file if necessary
@@ -62,7 +63,7 @@ files = [
     "./saves/best_last_agent.pth",
 ]
 
-files = ["saves/all/bestof/best_gen_20.pth"]
+# files = ["saves/all/bestof/best_last_agent.pth"]
 
 gens_to_load = 0
 for i in range(gens_to_load):
@@ -88,7 +89,7 @@ def load_envs():
 
 
 load_envs()
-
+start, end = None, None
 # Main game loop
 while True:
     window.fill(SCREEN_COLOR)
@@ -103,6 +104,24 @@ while True:
                 quit()
             if event.key == K_SPACE:
                 load_envs()
+            if event.key == K_n:
+                start = (
+                    pygame.mouse.get_pos()
+                    if start is None
+                    else (
+                        env.add_wall(
+                            Wall(
+                                start[0],
+                                start[1],
+                                pygame.mouse.get_pos()[0],
+                                pygame.mouse.get_pos()[1],
+                            )
+                        ),
+                        None,
+                    )[1]
+                )
+            if event.key == K_s:
+                env.save_walls("./data/walls/walls7.txt")
 
     # Update agent and display environment
     for i, env in enumerate(envs):

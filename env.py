@@ -147,6 +147,7 @@ class Enviroment:
         with open(filename, "r") as f:
             for line in f:
                 wall = line.split()
+                print(wall)
                 self.add_wall(
                     Wall(int(wall[0]), int(wall[1]), int(wall[2]), int(wall[3]))
                 )
