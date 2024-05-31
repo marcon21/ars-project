@@ -54,3 +54,17 @@ class NN(nn.Module):
         the list is in the following order: [fc1.weight, fc1.bias, fc2.weight, fc2.bias, fc3.weight, fc3.bias]
         """
         return deepcopy(self.state_dict())
+
+    def get_parameters_as_array(self):
+        """
+        Returns all the parameters of the network as a single NumPy array.
+        """
+        # Extract the parameters and convert them to NumPy arrays
+        params = []
+        for param in self.parameters():
+            params.append(param.detach().numpy().flatten())
+        
+        # Concatenate all parameter arrays into a single array
+        all_params = np.concatenate(params)
+        
+        return all_params

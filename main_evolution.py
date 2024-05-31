@@ -12,6 +12,10 @@ from tqdm import tqdm
 import pickle
 import random
 from copy import deepcopy
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_distances
+from scipy.spatial.distance import pdist
+import matplotlib.pyplot as plt
 
 
 def run_simulation(env, i, fitness_scores):
@@ -54,19 +58,27 @@ if __name__ == "__main__":
         evl.population[0].load_walls(path)
         w = deepcopy(evl.population[0].walls)
         maps.append(w)
+    cosine_distances_evolution = []
+    pairwise_distances_evolution = []
 
     # Simulation for each generation
     try:
         for generation in range(GENERATIONS):
-            if generation <= 15:
-                W1 = 0.95
-                W2 = 0.05
-                W3 = 0
-            else:
-                W1 = 0.8
-                W2 = 0.2
-                W3 = 0
-
+            
+            genomes = [(env.agent.controller.get_parameters_as_array()) for env in evl.population]
+            genomes = pd.DataFrame(genomes)
+            cos_distances = cosine_distances(genomes)
+            pair_dist = pdist(genomes)
+            average_cos_distance = np.mean(cos_distances)
+            cosine_distances_evolution.append(average_cos_distance)
+            average_pair_distance = np.mean(pair_dist)
+            pairwise_distances_evolution.append(average_pair_distance)
+            print(f"Generation {generation} - Average Cosine Distance: {average_cos_distance} - Average Pairwise Distance: {average_pair_distance}")
+            
+        
+            
+            
+        
             print(f"Generation {generation} - Simulating...")
 
             # random start location
@@ -109,6 +121,8 @@ if __name__ == "__main__":
             print(
                 f"Generation {generation} - Average Fitness scores: {np.mean(fitness_scores)} - Best Fitness score: {np.max(fitness_scores)} - {s}"
             )
+            
+            
 
             # Check if the best agent is the same as last generation
             # if np.argmax(fitness_scores) == 0:
@@ -160,3 +174,30 @@ if __name__ == "__main__":
     finally:
         model = best_agent.agent.controller
         torch.save(model.state_dict(), "./saves/best_last_agent.pth")
+        # Genera l'asse x (numero di generazioni)
+        generations = range(1, len(cosine_distances_evolution) + 1)
+
+        plt.figure(figsize=(10, 5))
+
+        plt.subplot(2, 1, 1)
+        plt.scatter(generations, cosine_distances_evolution, label='Cosine Distances', color='blue')
+        plt.xlabel('Generation')
+        plt.ylabel('Distance')
+        plt.title('Cosine Distances Over Generations')
+        plt.grid(True)
+        plt.legend()
+
+        plt.subplot(2, 1, 2)
+        plt.scatter(generations, pairwise_distances_evolution, label='Pairwise Distances', color='red')
+        plt.xlabel('Generation')
+        plt.ylabel('Distance')
+        plt.title('Pairwise Distances Over Generations')
+        plt.grid(True)
+        plt.legend()
+
+        plt.tight_layout()
+
+        plt.savefig('distances_evolution_plot.png')
+
+        plt.show()
+                

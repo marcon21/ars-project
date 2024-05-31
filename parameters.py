@@ -8,9 +8,9 @@ from torch.nn import functional as F
 # agent specifics
 AGENT_NUMBER = 128
 X_START, Y_START = 500, 500
-N_SENSORS, MAX_DISTANCE = 36, 200
+N_SENSORS, MAX_DISTANCE = 12, 150
 AGENT_SIZE, AGENT_COLOR = 8, "orange"
-W1, W2, W3 = (0.8, 0.2, 0)
+W1, W2, W3 = (0.95, 0.05, 0)
 INSTANTS = 500
 ACTIVATION = F.relu
 
