@@ -7,9 +7,9 @@ __pycache__/
 *.so
 
 # weights
-saves/all/*.pth
-saves/all/gen*
-saves/all/bestof/best_*.pth
+# saves/all/*.pth
+# saves/all/gen*
+# saves/all/bestof/best_*.pth
 
 # Distribution / packaging
 .Python

@@ -48,36 +48,6 @@ class Evolution:
         """
         Selection of the agents based on their fitness score with the rank-based selection method.
         """
-        # # Combine agents with their fitness scores and sort them
-        # populations_scores = list(zip(self.population, fitness_scores))
-        # self.sorted_population_with_scores = sorted(
-        #     populations_scores, key=lambda x: x[1], reverse=True
-        # )
-
-        # print("highest fitness score: ", self.sorted_population_with_scores[0])
-        # print("lowest fitness score: ", self.sorted_population_with_scores[-1])
-
-        # # Extract the sorted population and fitness scores
-        # sorted_population, sorted_fitness_scores = zip(
-        #     *self.sorted_population_with_scores
-        # )
-
-        # # Calculate rank-based probabilities
-        # ranks = np.arange(1, len(sorted_population) + 1)
-        # probabilities = 1 / ranks
-        # probabilities /= np.sum(probabilities)
-
-        # # Perform selection based on the calculated probabilities
-        # selected_indices = np.random.choice(
-        #     len(sorted_population),
-        #     size=len(self.population),
-        #     p=probabilities,
-        #     replace=True,
-        # )
-        # # Half the population is selected
-        # # selected_indices = selected_indices[: len(selected_indices) // 2]
-        # self.population = [sorted_population[i] for i in selected_indices]
-
         populations_scores = list(zip(self.population, fitness_scores))
         sorted_population = sorted(populations_scores, key=lambda x: x[1], reverse=True)
 
@@ -103,27 +73,6 @@ class Evolution:
         return genome
 
     def crossover(self):
-        # new_population = []
-        # for _ in range(len(self.population)):
-        #     parent1 = self.choose_parents()
-        #     parent2 = self.choose_parents()
-        #     new_genome = self.reproduction(parent1.agent.genome, parent2.agent.genome)
-
-        #     agent = EvolvedAgent(
-        #         x=X_START,
-        #         y=Y_START,
-        #         n_sensors=N_SENSORS,
-        #         controller=self.create_model(),
-        #         size=AGENT_SIZE,
-        #         color=AGENT_COLOR,
-        #         max_distance=MAX_DISTANCE,
-        #     )
-        #     agent.controller.set_weights(new_genome)
-        #     env = EnvEvolution(agent)
-        #     new_population.append(env)
-
-        # self.population = new_population
-
         pairs = np.random.choice(
             self.population, size=(self.initial_population_size - 2, 2)
         )
