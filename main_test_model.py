@@ -9,6 +9,7 @@ import torch
 from nn import NN
 from parameters import *
 import os
+from actors import Wall
 
 
 # Import parameters from a file if necessary
@@ -21,6 +22,7 @@ pygame.display.set_caption(GAME_TITLE)
 
 dt = 0
 grid_size = GRIDSIZE
+map_n = 0
 COLORS = ["red", "green", "blue", "yellow", "purple", "orange", "pink", "brown"]
 
 
@@ -53,21 +55,28 @@ def setup(file="./saves/best_last_agent.pth", x=X_START, y=Y_START, c=AGENT_COLO
         grid_size=grid_size,
     )
     # Load walls or landmarks if necessary
-    env.load_walls(WALLS_TXT)
+    env.load_walls(WALLS_TXT[map_n])
 
     return env
 
 
 files = [
-    "./saves/best_last_agent.pth",
+    # "./saves/best_last_agent.pth",
+    # "./saves/all/bestof/best_gen_10.pth",
+    # "./saves/all/bestof/best_gen_15.pth",
+    # "./saves/all/bestof/best_gen_20.pth",
+    # "./saves/all/bestof/best_gen_25.pth",
+    # "./saves/all/bestof/best_gen_30.pth",
+    # "./saves/all/bestof/best_gen_40.pth",
+    # "./saves/all/bestof/best_gen_50.pth",
 ]
 
-files = ["saves/all/bestof/best_gen_20.pth"]
+files = ["saves/best_last_agent.pth"]
 
 gens_to_load = 0
-for i in range(gens_to_load):
+for i in range(0, gens_to_load, 5):
     # check if file exists
-    f = f"./saves/all/best_gen_{i}.pth"
+    f = f"./saves/all/bestof/best_gen_{i}.pth"
     if os.path.isfile(f):
         files.append(f)
 
@@ -88,7 +97,7 @@ def load_envs():
 
 
 load_envs()
-
+start, end = None, None
 # Main game loop
 while True:
     window.fill(SCREEN_COLOR)
@@ -103,11 +112,33 @@ while True:
                 quit()
             if event.key == K_SPACE:
                 load_envs()
+            if event.key == K_m:
+                map_n = (map_n + 1) % len(WALLS_TXT)
+                load_envs()
+            if event.key == K_n:
+                start = (
+                    pygame.mouse.get_pos()
+                    if start is None
+                    else (
+                        env.add_wall(
+                            Wall(
+                                start[0],
+                                start[1],
+                                pygame.mouse.get_pos()[0],
+                                pygame.mouse.get_pos()[1],
+                            )
+                        ),
+                        None,
+                    )[1]
+                )
+            if event.key == K_s:
+                env.save_walls("./data/walls/walls7.txt")
 
     # Update agent and display environment
     for i, env in enumerate(envs):
         env.move_agent()
         env.show(window)
+        # env.draw_sensors(window)
 
         if i == 0:
             for el in env.visited.keys():
@@ -117,6 +148,7 @@ while True:
                     np.array(el) * grid_size + [AGENT_SIZE / 2, AGENT_SIZE / 2],
                     2,
                 )
+            # print(env.collisions)
 
     pygame.display.flip()
 

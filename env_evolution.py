@@ -50,8 +50,8 @@ class EnvEvolution(Enviroment):
         self.grid_size = grid_size
         self.visited = {}
         self.total_cells = (width // grid_size) * (height // grid_size)
-        # self.average_turn = 0
-        # self.ticks = 0
+        self.average_turn = 0
+        self.ticks = 0
 
     def reset(self, random=False):
         self.collisions = 0
@@ -76,12 +76,7 @@ class EnvEvolution(Enviroment):
         vl, vr = self.agent.controller.forward(distances)
 
         move_vector = self.agent.direction_vector * 5
-        theta = (vr - vl) * 2
-
-        # self.average_turn = (self.average_turn * self.ticks + abs(vl - vr)) / (
-        #     self.ticks + 1
-        # )
-        # self.ticks += 1
+        theta = (vr - vl) * (pi / 180) * 90
 
         for wall in self.walls:
             current_d = distance_from_wall(wall, self.agent.pos)

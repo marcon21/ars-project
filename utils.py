@@ -1,8 +1,10 @@
 import numpy as np
 import math
 import random as random
+import warnings
 
 # Author: Daniel Marcon
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 def intersection(seg1, seg2):
